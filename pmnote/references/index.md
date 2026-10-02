@@ -10,6 +10,6 @@
 - [公开岗位](jobs.md)：288 个页面
 - [课程与咨询介绍](services.md)：7 个页面
 - [指南、工具与栏目入口](guides.md)：27 个页面
-- [频道公开目录](channels.md)：718 条视频与播客链接
+- [频道公开目录](channels.md)：718 条频道内容链接
 
 还可以查阅 [PMNote 全站索引](https://pmnote.ai/llms.txt)。
