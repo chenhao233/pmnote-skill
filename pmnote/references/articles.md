@@ -1,7 +1,5 @@
 # 文章与视频配套文字
 
-标题和链接只用于选择来源，回答前必须打开对应网页读取正文。视频、播客页面不等于完整转写；岗位、价格及服务状态须重新核验。
-
 - [Demo期、研发期、线上期的游戏项目，怎么落地AI](https://pmnote.ai/articles/ai-adoption-by-project-stage)
 - [一名互联网游戏PM眼中的 AI 变革](https://pmnote.ai/articles/ai-change-in-game-pm-eyes)
 - [当AI重新划分游戏行业的阶层](https://pmnote.ai/articles/ai-reshaping-game-industry)

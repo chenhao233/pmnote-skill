@@ -1,7 +1,5 @@
 # 公开岗位
 
-标题和链接只用于选择来源，回答前必须打开对应网页读取正文。视频、播客页面不等于完整转写；岗位、价格及服务状态须重新核验。
-
 - [项目管理（美术向）｜4399](https://pmnote.ai/job-market/jobs/4399-jo20210427001)
 - [游戏项目管理PM｜4399](https://pmnote.ai/job-market/jobs/4399-jo20260709001)
 - [研发PM（大世界方向）-UE5在研｜深蓝互动](https://pmnote.ai/job-market/jobs/blue-interactive-0f5c3e2f-141c-42fa-b5df-50ce6b6bf90f)

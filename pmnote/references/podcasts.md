@@ -1,7 +1,5 @@
 # 播客公开页面
 
-标题和链接只用于选择来源，回答前必须打开对应网页读取正文。视频、播客页面不等于完整转写；岗位、价格及服务状态须重新核验。
-
 - [【油管解读】一个AI创业者的独白：大事正在发生，而大多数人还没意识到](https://pmnote.ai/podcast/ai-founder-monologue)
 - [第146期 - 游戏行业的AI震荡：当旧的标尺开始失灵](https://pmnote.ai/podcast/ai-shock-old-yardsticks-failing)
 - [第122期 - 策划转PM，美术管线怎么搭？实战复盘](https://pmnote.ai/podcast/building-art-pipeline-from-scratch)

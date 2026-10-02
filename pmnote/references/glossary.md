@@ -1,7 +1,5 @@
 # 术语
 
-标题和链接只用于选择来源，回答前必须打开对应网页读取正文。视频、播客页面不等于完整转写；岗位、价格及服务状态须重新核验。
-
 - [AI资产溯源是什么意思？](https://pmnote.ai/glossary/ai-asset-provenance)
 - [AI辅助原型是什么意思？](https://pmnote.ai/glossary/ai-assisted-prototyping)
 - [AI自动化游戏测试是什么意思？](https://pmnote.ai/glossary/ai-game-testing)

@@ -1,7 +1,5 @@
 # 频道公开目录
 
-这里只保存标题与链接，不代表已阅读媒体内容。只有公开文字能支持回答时才引用；无法读取字幕或文字稿时说明限制，不编造观点或引语。
-
 - [游戏PM请不要浪费你的经验](https://www.bilibili.com/video/BV11PLg65EcQ/)
 - [PM如何提升项目的上限？](https://www.bilibili.com/video/BV11sQaYqE1G/)
 - [AI在游戏团队里真正跑起来，是什么样的？](https://www.bilibili.com/video/BV11wwtzkEye/)
