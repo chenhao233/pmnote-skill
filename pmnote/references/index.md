@@ -1,6 +1,6 @@
 # PMNote 公开内容索引
 
-更新日期：2026-10-02
+更新日期：2026-10-03
 
 数据来源：[PMNote 公开索引](https://pmnote.ai/agent-page-index.json)
 
@@ -12,4 +12,4 @@
 - [指南、工具与栏目入口](guides.md)：27 个页面
 - [频道公开目录](channels.md)：718 条频道内容链接
 
-还可以查阅 [PMNote 全站索引](https://pmnote.ai/llms.txt)。
+新内容可查阅 [PMNote 当前全站目录](https://pmnote.ai/llms.txt)。

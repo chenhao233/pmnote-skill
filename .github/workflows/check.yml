@@ -1,0 +1,14 @@
+name: Check Skill
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - run: python3 scripts/index.py check
+      - run: python3 -m unittest discover -s tests
+      - run: python3 scripts/index.py package --output /tmp/pmnote.zip
