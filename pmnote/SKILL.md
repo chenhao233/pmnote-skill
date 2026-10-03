@@ -1,9 +1,12 @@
 ---
 name: pmnote
-description: 检索 PMNote 的公开文章、播客与资料，回答游戏项目管理、职业发展和 AI 提效问题。
+description: 供个人学习时检索 PMNote 的公开文章、播客与资料，理解游戏项目管理、职业发展和 AI 提效方法。
+license: Proprietary. 仅限个人学习，完整条款见 LICENSE。
 ---
 
 # PMNote
+
+用于个人学习；工作或商业用途需另行获得 PMNote 授权。完整条款见 [LICENSE](LICENSE)。
 
 这里的 PM 指游戏项目管理。先从[分类索引](references/index.md)选择相关分类，按问题查找标题，优先打开 PMNote 站内文章与配套文字，再结合原文回答，附上来源链接。无需通读所有目录。
 

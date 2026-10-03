@@ -1,5 +1,7 @@
 # 维护索引
 
+本页供 PMNote 维护者更新和发布官方版本。使用问题请[提交 Issue](https://github.com/chenhao233/pmnote-skill/issues)；其他用途须按[许可](LICENSE)另行取得授权。
+
 索引从 PMNote 已发布的公开目录生成。使用 Python 3.9 或更新版本，在仓库根目录运行：
 
 ```sh

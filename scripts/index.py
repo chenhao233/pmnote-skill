@@ -79,7 +79,11 @@ def render(data, day):
 
 
 def check():
-    assert (ROOT / 'LICENSE').read_text().startswith('MIT License\n')
+    license_body = (ROOT / 'LICENSE').read_bytes()
+    if not license_body.decode('utf-8').startswith('PMNote Skill 个人学习许可\n'):
+        raise ValueError('Unexpected license')
+    if (ROOT / 'pmnote/LICENSE').read_bytes() != license_body:
+        raise ValueError('Bundled license differs from repository license')
     assert (ROOT / 'pmnote/SKILL.md').read_text().startswith('---\nname: pmnote\n')
     for p in [*ROOT.glob('*.md'), *ROOT.glob('pmnote/**/*.md')]:
         for link in LINK.findall(p.read_text()):
@@ -122,11 +126,10 @@ def main():
     check()
     if args.command == 'package':
         if args.output is None: parser.error('package requires --output')
-        paths = [ROOT / 'pmnote/SKILL.md', ROOT / 'pmnote/agents/openai.yaml',
+        paths = [ROOT / 'pmnote/SKILL.md', ROOT / 'pmnote/agents/openai.yaml', ROOT / 'pmnote/LICENSE',
                  *[REFS / (key + '.md') for key in TITLES], REFS / 'index.md']
         with zipfile.ZipFile(args.output, 'w', zipfile.ZIP_DEFLATED) as archive:
             for path in paths: archive.write(path, path.relative_to(ROOT))
-            archive.write(ROOT / 'LICENSE', 'pmnote/LICENSE')
         print('Package written:', args.output)
 
 

@@ -1,6 +1,6 @@
 interface:
   display_name: "PMNote 助手"
-  short_description: "查阅 PMNote 公开分享，分析游戏项目管理问题并引用原文"
-  default_prompt: "请用 $pmnote 帮我分析游戏项目管理问题，先阅读相关公开原文，再给建议。"
+  short_description: "供个人学习查阅 PMNote 公开分享，理解游戏项目管理方法"
+  default_prompt: "请用 $pmnote 带我学习游戏项目管理方法，先阅读相关公开原文，再讲解并附上出处。"
 policy:
   allow_implicit_invocation: true
