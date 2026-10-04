@@ -44,6 +44,33 @@ class SourceValidation(unittest.TestCase):
         self.assertIn('\\[click\\]', result)
         self.assertNotIn('<script>', result)
 
+    def test_channel_groups_preserve_links_and_order_within_each_platform(self):
+        self.data['catalog'] = [
+            {'url': 'https://' + host + '/' + item, 'title': item}
+            for host, item in [('www.bilibili.com', 'b1'),
+                               ('www.xiaoyuzhoufm.com', 'x1'),
+                               ('zhuanlan.zhihu.com', 'z1'),
+                               ('www.xiaoyuzhoufm.com', 'x2'),
+                               ('www.bilibili.com', 'b2')]]
+        body = index.render(self.data, '2026-10-04')['channels.md']
+        sections = body.split('\n## ')[1:]
+        expected = [('小宇宙', 'www.xiaoyuzhoufm.com'),
+                    ('知乎', 'zhuanlan.zhihu.com'), ('B站', 'www.bilibili.com')]
+        self.assertEqual(len(sections), len(expected))
+        for section, (title, host) in zip(sections, expected):
+            with self.subTest(platform=title):
+                self.assertEqual(section.splitlines()[0], title)
+                urls = index.LINK.findall(section)
+                self.assertEqual(urls, [r['url'] for r in self.data['catalog']
+                                       if index.valid_url(r['url']).netloc == host])
+        self.assertCountEqual(index.LINK.findall(body),
+                              [r['url'] for r in self.data['catalog']])
+
+    def test_catalog_cannot_silently_drop_an_unsupported_platform(self):
+        self.data['catalog'].append({'url': 'https://pmnote.ai/article', 'title': 'test'})
+        with self.assertRaisesRegex(ValueError, 'Unexpected channel platform'):
+            index.render(self.data, '2026-10-04')
+
 
 if __name__ == '__main__':
     unittest.main()

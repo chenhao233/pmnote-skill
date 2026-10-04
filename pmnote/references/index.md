@@ -1,6 +1,6 @@
 # PMNote 公开内容索引
 
-更新日期：2026-10-03
+更新日期：2026-10-04
 
 数据来源：[PMNote 公开索引](https://pmnote.ai/agent-page-index.json)
 

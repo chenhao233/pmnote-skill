@@ -16,6 +16,8 @@ TITLES = dict(articles='文章与视频配套文字', podcasts='播客公开页�
               glossary='术语', jobs='公开岗位', services='课程与咨询介绍',
               guides='指南、工具与栏目入口', channels='频道公开目录')
 HOSTS = {'pmnote.ai', 'www.bilibili.com', 'www.xiaoyuzhoufm.com', 'zhuanlan.zhihu.com'}
+CHANNEL_PLATFORMS = {'www.xiaoyuzhoufm.com': '小宇宙',
+                     'zhuanlan.zhihu.com': '知乎', 'www.bilibili.com': 'B站'}
 LINK = re.compile(r'\]\(([^\s)]+)\)')
 
 
@@ -40,6 +42,7 @@ def render(data, day):
     if data.get('schemaVersion') != 3 or data.get('siteBase') != 'https://pmnote.ai':
         raise ValueError('Unexpected source schema')
     groups = {key: [] for key in TITLES}
+    channels = {host: [] for host in CHANNEL_PLATFORMS}
     seen = set()
     for source in ('pages', 'catalog'):
         rows = data.get(source)
@@ -50,6 +53,8 @@ def render(data, day):
             p = valid_url(url)
             if source == 'pages' and p.netloc != 'pmnote.ai':
                 raise ValueError('Non-PMNote page')
+            if source == 'catalog' and p.netloc not in CHANNEL_PLATFORMS:
+                raise ValueError('Unexpected channel platform')
             if not isinstance(title, str) or not title.strip() or '\n' in title or '\r' in title:
                 raise ValueError('Invalid title')
             if url in seen:
@@ -64,11 +69,16 @@ def render(data, day):
             elif path.startswith('/job-market/jobs/'): key = 'jobs'
             elif path.startswith('/courses/') or path in ('/services', '/en/services'): key = 'services'
             title = title.replace('\\', '\\\\').replace('[', '\\[').replace(']', '\\]').replace('<', '&lt;').replace('>', '&gt;')
-            groups[key].append(f'- [{title}]({url})')
+            entry = f'- [{title}]({url})'
+            groups[key].append(entry)
+            if key == 'channels': channels[p.netloc].append(entry)
     if any(not rows for rows in groups.values()):
         raise ValueError('Empty category; inspect the source before replacing the index')
     result = {key + '.md': '# ' + TITLES[key] + '\n\n' + '\n'.join(rows) + '\n'
               for key, rows in groups.items()}
+    result['channels.md'] = '# ' + TITLES['channels'] + '\n\n' + '\n\n'.join(
+        '## ' + CHANNEL_PLATFORMS[host] + '\n\n' + '\n'.join(rows)
+        for host, rows in channels.items() if rows) + '\n'
     index = ['# PMNote 公开内容索引', '', '更新日期：' + day, '',
              f'数据来源：[PMNote 公开索引]({SOURCE})', '']
     index += [f'- [{TITLES[k]}]({k}.md)：{len(v)} ' + ('条频道内容链接' if k == 'channels' else '个页面')
