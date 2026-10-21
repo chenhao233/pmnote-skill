@@ -22,7 +22,9 @@ Agent 可以使用自身的技能安装器，或下载仓库后将 `pmnote/` 复
 
 ## 手动安装
 
-下载 [仓库 ZIP](https://github.com/chenhao233/pmnote-skill/archive/refs/heads/main.zip)，解压后复制其中的 `pmnote/` 到对应目录。也可以下载 [Skill 安装包](https://github.com/chenhao233/pmnote-skill/releases/latest/download/pmnote.zip)，通过工具的「导入技能」入口安装。
+下载[当前主线 ZIP](https://github.com/chenhao233/pmnote-skill/archive/refs/heads/main.zip)，解压后复制其中的 `pmnote/` 到对应目录。通过工具的「导入技能」入口安装时，也应使用当前主线中的完整 `pmnote/` 文件夹。
+
+[Releases](https://github.com/chenhao233/pmnote-skill/releases)保留历史版本，版本包中的索引日期可能早于当前主线。获取当前面经与AI工具读取能力，请以主线为准。
 
 ## 确认生效
 

@@ -354,6 +354,9 @@
 - [第189期 - 做了两年PM，才发现自己只会抄答案](https://www.xiaoyuzhoufm.com/episode/6a9d6838f03e74ee6b05f5ea)
 - [第190期 - 游戏公司 AI 转型，从"做几个 Agent"开始？](https://www.xiaoyuzhoufm.com/episode/6a9e551fa0210c197dcebd33)
 - [【番外14】游戏 PM 2027秋招观察：岗位怎么找、简历面试怎么准备，以及 AI 带来的变化](https://www.xiaoyuzhoufm.com/episode/6aa6c3389d326477816881d3)
+- [第191期 - 2026游戏行业秋招有多卷？策划×PM聊透入行门槛、作品集和第一份工作](https://www.xiaoyuzhoufm.com/episode/6aa81917129fe965d3328489)
+- [【直播回放】游戏 PM 2027 秋招观察](https://www.xiaoyuzhoufm.com/episode/6ab29e37f04646b3a9559a49)
+- [第192期 - 游戏PM Q3 AI观察：一句话能复刻《守望先锋》，项目为什么还没快起来？](https://www.xiaoyuzhoufm.com/episode/6ac19915e742e36efcbe2901)
 
 ## 知乎
 

@@ -2,7 +2,9 @@
 
 - [Demo期、研发期、线上期的游戏项目，怎么落地AI](https://pmnote.ai/articles/ai-adoption-by-project-stage)
 - [一名互联网游戏PM眼中的 AI 变革](https://pmnote.ai/articles/ai-change-in-game-pm-eyes)
+- [别让干活的AI自己验收](https://pmnote.ai/articles/ai-independent-acceptance)
 - [当AI重新划分游戏行业的阶层](https://pmnote.ai/articles/ai-reshaping-game-industry)
+- [游戏公司的 AI 玩家](https://pmnote.ai/articles/ai-simulated-players-game-development)
 - [游戏行业的AI转型，没有人能置身事外](https://pmnote.ai/articles/ai-transform-game-industry)
 - [转型成为游戏PM前，没人告诉你的事](https://pmnote.ai/articles/bilibili-bv12av569e9e)
 - [AI的产出，该信任到什么程度？](https://pmnote.ai/articles/bilibili-bv18jqhbee57)

@@ -1,9 +1,9 @@
-# 指南、工具与栏目入口
+# 指南与栏目入口
 
 - [Hao 的游戏 PM 笔记 | 游戏项目管理、职业成长与 AI × 游戏研发](https://pmnote.ai/)
 - [关于 Hao](https://pmnote.ai/about)
+- [把 PMNote 带进你的 AI](https://pmnote.ai/agent)
 - [AI × 游戏研发](https://pmnote.ai/ai)
-- [内容库](https://pmnote.ai/articles)
 - [AI × 游戏研发专题](https://pmnote.ai/articles/topics/ai-for-game-pm)
 - [求职与转行专题](https://pmnote.ai/articles/topics/career)
 - [真实卷宗专题](https://pmnote.ai/articles/topics/dossiers)
@@ -17,13 +17,11 @@
 - [PSPO II：一次挂掉的考试](https://pmnote.ai/certifications/pspo2)
 - [Hao 的频道 | B站、小宇宙、知乎与小红书](https://pmnote.ai/channels)
 - [合作](https://pmnote.ai/collab)
-- [游戏 PM 社区](https://pmnote.ai/community)
+- [游戏 PM 岗位](https://pmnote.ai/community/jobs)
+- [文章与资料](https://pmnote.ai/community/library)
 - [About Hao](https://pmnote.ai/en/about)
 - [游戏 PM 术语库](https://pmnote.ai/glossary)
 - [游戏 PM 面试训练场](https://pmnote.ai/interview)
-- [游戏 PM 岗位与 JD 库](https://pmnote.ai/job-market/jobs)
-- [JD观察](https://pmnote.ai/job-market/observations)
 - [从这里开始](https://pmnote.ai/start)
 - [订阅更新](https://pmnote.ai/subscribe)
-- [游戏项目经理工具箱](https://pmnote.ai/tools)
 - [游戏 PM 求职自检](https://pmnote.ai/tools/career-check)
