@@ -188,7 +188,7 @@ def main():
     if args.command == 'package':
         if args.output is None: parser.error('package requires --output')
         paths = [ROOT / 'pmnote/SKILL.md', ROOT / 'pmnote/agents/openai.yaml', ROOT / 'pmnote/LICENSE', ROOT / 'pmnote/scripts/read.py',
-                 *[REFS / (key + '.md') for key in TITLES], REFS / 'index.md', REFS / 'source.json']
+                 *[REFS / (key + '.md') for key in TITLES], REFS / 'index.md', REFS / 'course-guide.md', REFS / 'source.json']
         with zipfile.ZipFile(args.output, 'w', zipfile.ZIP_DEFLATED) as archive:
             for path in paths: archive.write(path, path.relative_to(ROOT))
         print('Package written:', args.output)
