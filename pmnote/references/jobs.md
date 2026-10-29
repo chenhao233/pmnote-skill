@@ -46,6 +46,7 @@
 - [PC/Console 项目发行项目经理（Publishing PM）｜腾讯](https://pmnote.ai/job-market/jobs/game-53874092-2089250910554468352)
 - [UE5自研IP跨平台射击游戏-游戏本地化项目经理｜腾讯](https://pmnote.ai/job-market/jobs/game-53874092-2090292344770445312)
 - [和平精英-游戏研发项目经理｜腾讯](https://pmnote.ai/job-market/jobs/game-53874092-2094637526550753280)
+- [游戏研发产品项目经理｜腾讯](https://pmnote.ai/job-market/jobs/game-53874092-2094729199775563776)
 - [游戏本地化PM-Localization Project Manager｜腾讯](https://pmnote.ai/job-market/jobs/game-53874092-2094762221493202944)
 - [知名IP海外项目-游戏研发项目管理｜腾讯](https://pmnote.ai/job-market/jobs/game-53874092-2095458274395734016)
 - [天美游戏-综合项目管理｜腾讯](https://pmnote.ai/job-market/jobs/game-53874092-2099839263112867840)
