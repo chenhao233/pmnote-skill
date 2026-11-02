@@ -118,7 +118,7 @@ def render(data, day):
 
 def check():
     license_body = (ROOT / 'LICENSE').read_bytes()
-    if not license_body.decode('utf-8').startswith('PMNote Skill 个人学习许可\n'):
+    if not license_body.decode('utf-8').startswith('PMNote Skill 免费使用许可\n'):
         raise ValueError('Unexpected license')
     if (ROOT / 'pmnote/LICENSE').read_bytes() != license_body:
         raise ValueError('Bundled license differs from repository license')

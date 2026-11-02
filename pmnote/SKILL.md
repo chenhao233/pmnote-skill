@@ -1,18 +1,20 @@
 ---
 name: pmnote
-description: 供个人学习时检索 PMNote 的公开文章、播客、面经、游戏研发 AI 工具及课程介绍，理解游戏项目管理和职业发展方法。
-license: Proprietary. 仅限个人学习，完整条款见 LICENSE。
+description: 查阅 PMNote 公开原文，分析游戏项目管理中的版本排期、交付风险、跨团队协作和美术管线，准备游戏PM求职与面试、选择游戏研发AI工具。用于这些具体问题，即使未提PMNote；不用于未经澄清的产品经理问题。
+license: Proprietary. 个人、团队工作及商业项目免费使用；再分发等边界见 LICENSE。
 metadata:
-  version: "1.3.0"
+  version: "1.4.0"
 ---
 
 # PMNote
 
-用于个人学习；工作或商业用途需另行获得 PMNote 授权。完整条款见 [LICENSE](LICENSE)。
+个人学习、个人及团队工作、商业项目均可免费使用。作者署名、内部适配与再分发等边界见 [LICENSE](LICENSE)。
 
 这里的 PM 指游戏项目管理。先从[分类索引](references/index.md)选择相关分类，按问题查找标题，优先打开 PMNote 站内文章与配套文字，再结合原文回答，附上来源链接。无需通读所有目录。
 
 站内文章可将 URL 末尾的 `/` 替换为 `.md`（没有末尾斜杠时直接加 `.md`），获取纯 Markdown 正文，例如 [游戏 PM 完全指南](https://pmnote.ai/articles/game-pm-complete-guide.md)。需要检索多篇正文时，可查阅[全站正文合集](https://pmnote.ai/llms-full.txt)。
+
+处理实际工作问题时，结合用户提供的目标、约束和材料，先阅读相关公开原文，再给出具体判断和下一步。用户要求排期审查、风险清单或复盘提纲时，形成可直接使用的结果；缺少的人力、日期和项目事实明确列为未知，不自行补造。
 
 引用观点时注明作者或嘉宾，区分原文观点与结合用户情况给出的建议。视频和播客先查配套文字或 Shownotes；只有摘要时，就按摘要引用，不补写未读到的节目观点。
 
