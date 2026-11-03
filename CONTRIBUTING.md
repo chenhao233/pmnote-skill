@@ -28,6 +28,19 @@ python3 pmnote/scripts/read.py tool tripo
 
 提交前运行 `python3 scripts/index.py check`。请使用 GitHub 的隐私邮箱提交；在 GitHub「Settings → Emails」可以找到自己的 `noreply` 地址。
 
+统一作品读取器支持网站公开的 version 8 紧凑目录和 schemaVersion 1 单作品详情。目录从 `/community/library/data/index.json` 获取，详情按 work ID 的 UTF-8 base64url（去掉 `=`）定位 `/community/library/data/works/<key>.json`；引用无需把 `?work=` 写进生成索引。读取器核对完整作品/版本数量、旧 ID、详情身份和各平台链接，保留日期与来源摘要，不下载第三方正文。
+
+在网站候选未上线时，仅使用明确的本地构建目录验证，不触碰生产：
+
+```sh
+python3 pmnote/scripts/read.py works --site-dir /path/to/site/dist --search JIRA
+python3 pmnote/scripts/read.py works --site-dir /path/to/site/dist --id hao-ai-economics-money --json
+python3 -m unittest discover -s tests
+PMNOTE_CANDIDATE_DIST=/path/to/site/dist python3 -m unittest discover -s tests
+```
+
+`--site-dir` 不会回退联网；本地模式通过只证明该候选可读，不代表公开接口已发布、生产版本绑定通过或用户已安装的 Skill 已更新。读取能力可以先发布，生成引用仍须从实际生产目录同步；不要为提前检查候选改写既有已发布索引。
+
 本地可启用推送前检查：`git config core.hooksPath scripts/hooks`。检查会拦截含个人邮箱的提交；GitHub Actions 也会检查索引与打包。
 
 发布安装包：

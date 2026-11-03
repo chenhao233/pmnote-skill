@@ -3,7 +3,7 @@ name: pmnote
 description: 查阅 PMNote 公开原文，分析游戏项目管理中的版本排期、交付风险、跨团队协作和美术管线，准备游戏PM求职与面试、选择游戏研发AI工具。用于这些具体问题，即使未提PMNote；不用于未经澄清的产品经理问题。
 license: Proprietary. 个人、团队工作及商业项目免费使用；再分发等边界见 LICENSE。
 metadata:
-  version: "1.4.0"
+  version: "1.5.0"
 ---
 
 # PMNote
@@ -21,6 +21,10 @@ metadata:
 站内播客页通常只有摘要；完整 Shownotes（内容提要、金句等）可从[频道目录](references/channels.md)查找同题的小宇宙链接。Shownotes 不等于节目逐字稿。
 
 查找最新内容或本地没有匹配项时，读取 [PMNote 当前全站目录](https://pmnote.ai/llms.txt)。也可以按标题在 PMNote 网站搜索同主题内容。
+
+查找作者的文章、视频和播客，以及同一内容的不同渠道版本时，可运行 `python3 <本Skill目录>/scripts/read.py works --search 关键词`。搜索覆盖主标题、原题别名和公开摘要的轻量索引，可加 `--type video` 或 `--topic ai`；这不是节目全文搜索。用返回的 work ID 运行 `python3 <本Skill目录>/scripts/read.py works --id <work-ID>`，读取各版本原标题、原链接、分别发布的日期和完整来源摘要。加 `--json` 可保留音频、来源标记等全部原始详情字段；旧 work ID 会按当前公开重定向归入同一作品。
+
+统一作品读取使用[公开作品索引](https://pmnote.ai/community/library/data/index.json)和 `/community/library/data/works/<work-ID的UTF-8-base64url>.json`（不带填充等号），无需查询参数、登录或执行网页脚本。引用具体观点仍优先打开详情提供的站内正文或平台原文；作品资料和摘要不等于正文、转写或绝对首发时间。接口尚未发布、版本不支持、索引不完整或正文不可读时，如实说明，不用旧索引补写作品关系或节目观点。
 
 学习面试问题或查面经时，先查[面经与公开分享](references/interviews.md)。这是动态内容：浏览器可直接打开条目；普通HTTP只返回“正在加载”时，运行随包脚本 `python3 <本Skill目录>/scripts/read.py interviews --search 腾讯`，再以返回的ID运行 `python3 <本Skill目录>/scripts/read.py interviews --id <ID>` 读取当前公开正文。搜索只发送必要的公司或通用主题关键词，不发送简历、联系方式或个人背景。脚本无需登录，只支持匿名公开读取，不支持发布、管理或读取“我的面经”。没有Python时用浏览器；两者都不能用时说明未读到正文。
 

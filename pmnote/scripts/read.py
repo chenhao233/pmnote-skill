@@ -1,10 +1,15 @@
 """Read PMNote public interviews and AI tool text; Python 3.9+, no login."""
 import argparse
+import base64
+import datetime
 from html.parser import HTMLParser
 import json
+from pathlib import Path
 import re
+import unicodedata
 import urllib.error
 import urllib.request
+from urllib.parse import urlsplit
 
 BASE = 'https://pmnote.ai'
 UUID = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')
@@ -152,6 +157,213 @@ def tool_text(slug):
     return body
 
 
+LIBRARY = '/community/library/data/'
+MEDIA = ('article', 'video', 'podcast', 'news')
+ROLES = ('', 'industry-observation', 'game-pm-practice', 'general-ai-governance', 'secondary-related')
+PLATFORMS = {'bilibili': 'B站', 'xiaoyuzhou': '小宇宙', 'zhihu': '知乎', 'pmnote': '站内'}
+
+
+def work_path(work_id):
+    if not isinstance(work_id, str) or not 0 < len(work_id) <= 512 or any(ord(c) < 32 for c in work_id):
+        raise ValueError('Invalid work identity')
+    key = base64.urlsafe_b64encode(work_id.encode('utf-8')).decode('ascii').rstrip('=')
+    return LIBRARY + 'works/' + key + '.json'
+
+
+def search_key(value):
+    value = unicodedata.normalize('NFKC', str(value)).lower()
+    return ''.join(c for c in value if not c.isspace() and unicodedata.category(c)[0] not in ('P', 'Z'))
+
+
+def source_url(value):
+    if not isinstance(value, str):
+        raise ValueError('Missing public source URL')
+    url = BASE + value if value.startswith('/') and not value.startswith('//') else value
+    parsed = urlsplit(url)
+    if parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password or any(c.isspace() for c in url):
+        raise ValueError('Invalid public source URL')
+    return url
+
+
+def target_url(identity):
+    if identity.startswith('local:'):
+        return identity[6:]
+    platform, _, external = identity.partition(':')
+    prefixes = {'bilibili': 'https://www.bilibili.com/video/',
+                'xiaoyuzhou': 'https://www.xiaoyuzhoufm.com/episode/',
+                'zhihu': 'https://zhuanlan.zhihu.com/p/'}
+    return prefixes.get(platform, '') + external + ('/' if platform == 'bilibili' else '') if platform in prefixes else ''
+
+
+def publication_key(value):
+    if not value or re.fullmatch(r'\d{4}-\d{2}-\d{2}', value):
+        return value
+    date = datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
+    if date.tzinfo is None:
+        raise ValueError('Publication instant has no timezone')
+    return date.astimezone(datetime.timezone.utc)
+
+
+class Works:
+    """Read versioned public metadata, never platform bodies or private data.
+
+    site_dir is an explicit offline candidate mode: it never falls back online.
+    """
+    def __init__(self, site_dir=None):
+        self.site_dir = Path(site_dir).resolve() if site_dir else None
+        self.index = self.load(LIBRARY + 'index.json')
+        data = self.index
+        if data.get('version') != 8 or data.get('full') is not True:
+            raise ValueError('Unsupported or partial work index; use the website, not a stale index')
+        if not isinstance(data.get('works'), list) or not isinstance(data.get('topics'), list):
+            raise ValueError('Incomplete work index')
+        self.topics = dict(data['topics'])
+        if len(self.topics) != len(data['topics']) or len(self.topics) > 30:
+            raise ValueError('Invalid work topics')
+        self.redirects = data.get('redirects', {})
+        if not isinstance(self.redirects, dict):
+            raise ValueError('Invalid work redirects')
+        self.works = [self.unpack(row) for row in data['works']]
+        self.by_id = {w['id']: w for w in self.works}
+        targets = [t for w in self.works for t in w['targets']]
+        counts = data.get('counts', {})
+        if (len(self.by_id) != len(self.works) or counts.get('works') != len(self.works)
+                or counts.get('platformVariants') != sum(not t['local'] for t in targets)
+                or counts.get('localTargets') != sum(t['local'] for t in targets)
+                or len({t['id'] for t in targets}) != len(targets)):
+            raise ValueError('Incomplete or duplicate work/variant coverage')
+        for old in self.redirects:
+            self.resolve(old)
+        self.search_text = {w['id']: search_key(w['title'] + w['summary']) + w['searchExtra'] + search_key(' '.join(
+            [w['id'], w['role'], *[self.topics[t] for t in w['topics']],
+             *[v for t in w['targets'] for v in (t['id'], t['url'], t['platform'], PLATFORMS.get(t['platform'], ''), t['mediaType'])]]))
+            for w in self.works}
+
+    def load(self, path):
+        if not path.startswith(LIBRARY) or '?' in path or '#' in path:
+            raise ValueError('Unexpected work metadata path')
+        if not self.site_dir:
+            return get_json(BASE + path)
+        file = (self.site_dir / path.lstrip('/')).resolve()
+        if self.site_dir not in file.parents:
+            raise ValueError('Work path escapes local candidate')
+        try:
+            raw = file.read_bytes()
+        except OSError:
+            raise ValueError('Local candidate metadata unavailable; no online fallback') from None
+        if len(raw) > 10_000_000:
+            raise ValueError('Work metadata exceeds 10 MB; nothing truncated')
+        return json.loads(raw)
+
+    def unpack(self, row):
+        if not isinstance(row, list) or len(row) not in (9, 10):
+            raise ValueError('Unexpected compact work row')
+        identity, title, summary, media, topics, date, packed, role, extra = row[:9]
+        work_path(identity)
+        if (not isinstance(title, str) or not title or not isinstance(summary, str)
+                or not isinstance(extra, str) or type(media) is not int or not 0 < media < 8
+                or type(topics) is not int or not 0 <= topics < 2 ** len(self.topics)
+                or type(role) is not int or not 0 <= role < len(ROLES) or not isinstance(packed, list)):
+            raise ValueError('Invalid compact work fields')
+        if type(date) in (int, float):
+            date = datetime.datetime.fromtimestamp(date / 1000, datetime.timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+        if not isinstance(date, str):
+            raise ValueError('Invalid work publication date')
+        publication_key(date)
+        targets = []
+        for target in packed:
+            if not isinstance(target, list) or len(target) not in (2, 3):
+                raise ValueError('Invalid work target')
+            tid, flags = target[:2]
+            tid = identity if tid == 0 else tid
+            if not isinstance(tid, str) or type(flags) is not int or flags not in (0, 1, 2, 4, 5, 6):
+                raise ValueError('Invalid work target identity/media')
+            href = target[2] if len(target) == 3 else target_url(tid)
+            source_url(href)
+            local = bool(flags & 4)
+            if local != tid.startswith('local:'):
+                raise ValueError('Work target local identity mismatch')
+            targets.append({'id': tid, 'url': href, 'mediaType': MEDIA[flags & 3], 'local': local,
+                            'platform': 'pmnote' if local else tid.split(':', 1)[0]})
+        if not targets:
+            raise ValueError('Work has no public targets')
+        return {'id': identity, 'title': title, 'summary': summary,
+                'types': [name for i, name in enumerate(MEDIA) if media & (1 << i)],
+                'topics': [name for i, name in enumerate(self.topics) if topics & (1 << i)],
+                'publishedAt': date, 'role': ROLES[role], 'searchExtra': extra, 'targets': targets,
+                'readUrl': BASE + work_path(identity)}
+
+    def resolve(self, identity):
+        work_path(identity)
+        seen = set()
+        while identity in self.redirects:
+            if identity in seen:
+                raise ValueError('Cyclic work redirect')
+            seen.add(identity)
+            identity = self.redirects[identity]
+            work_path(identity)
+        if identity not in self.by_id:
+            raise ValueError('No current public work found; do not restore it from an old index')
+        return identity
+
+    def listing(self, query='', media='all', topic='all'):
+        if len(query) > 200 or media not in ('all', 'article', 'video', 'podcast'):
+            raise ValueError('Use a short title/topic search and a supported media type')
+        topic = 'ai' if topic == 'ai-for-game-pm' else topic
+        if topic != 'all' and topic not in self.topics:
+            raise ValueError('Unknown work topic')
+        tokens = [search_key(t) for t in query.split() if search_key(t)]
+        matches = []
+        for w in self.works:
+            text = self.search_text[w['id']]
+            if (media == 'all' or media in w['types']) and (topic == 'all' or topic in w['topics']) and all(t in text for t in tokens):
+                matches.append(w)
+        return matches
+
+    def detail(self, identity):
+        identity = self.resolve(identity)
+        payload = self.load(work_path(identity))
+        work = payload.get('work', {})
+        if payload.get('schemaVersion') != 1 or payload.get('workId') != identity or work.get('id') != identity:
+            raise ValueError('Work detail identity mismatch')
+        if not isinstance(payload.get('platformVariants'), list) or not isinstance(payload.get('localTargets'), list):
+            raise ValueError('Missing platform/local work details')
+        expected = {t['id']: t for t in self.by_id[identity]['targets']}
+        variants = payload['platformVariants'] + payload['localTargets']
+        if len(variants) != len(expected) or {v.get('variantId') for v in variants} != set(expected):
+            raise ValueError('Incomplete work version details')
+        for v in variants:
+            t = expected[v['variantId']]
+            if (v.get('workId') != identity or v.get('url') != t['url'] or v.get('mediaType') != t['mediaType']
+                    or v.get('platform') != t['platform'] or not isinstance(v.get('title'), str)
+                    or not isinstance(v.get('summary'), str) or not isinstance(v.get('publishedAt'), (str, type(None)))):
+                raise ValueError('Work version identity or metadata mismatch')
+        if work.get('title') != self.by_id[identity]['title'] or publication_key(work.get('date', '')) != publication_key(self.by_id[identity]['publishedAt']):
+            raise ValueError('Work changed between index and detail; retry a new current snapshot')
+        if not isinstance(work.get('aliases'), list) or not all(isinstance(t, str) for t in work['aliases']):
+            raise ValueError('Missing original title aliases')
+        return payload  # Keep all original fields, audio, dates, provenance and summaries.
+
+
+def work_markdown(payload):
+    w = payload['work']
+    lines = ['# ' + label(w['title']), '', '作品资料：' + BASE + work_path(w['id']),
+             '最早已知发布：' + (w.get('date') or '待核'),
+             '范围：作品与各平台版本的公开元数据；摘要不是全文或节目转写。', '', '## 原题与别名']
+    lines += ['- ' + label(title) for title in w['aliases']]
+    for v in payload['platformVariants'] + payload['localTargets']:
+        lines += ['', '## ' + label(v['title']), '平台：' + PLATFORMS.get(v['platform'], v['platform']),
+                  '形式：' + v['mediaType'], '原文：' + source_url(v['url']),
+                  '版本发布：' + (v.get('publishedAt') or '待核')]
+        if v.get('updatedAt'):
+            lines.append('修订：' + v['updatedAt'] + '（不替代发布日期）')
+        if v.get('durationSeconds') is not None:
+            lines.append('来源时长（秒）：' + str(v['durationSeconds']))
+        if v.get('summary'):
+            lines += ['', '来源摘要：', v['summary']]
+    return '\n'.join(lines)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='kind', required=True)
@@ -160,8 +372,28 @@ def main():
     interviews.add_argument('--id')
     tools = sub.add_parser('tool')
     tools.add_argument('slug')
+    works = sub.add_parser('works', help='Search current unified works or read every version of one work')
+    works.add_argument('--search', default='')
+    works.add_argument('--id')
+    works.add_argument('--type', choices=('all', 'article', 'video', 'podcast'), default='all')
+    works.add_argument('--topic', default='all')
+    works.add_argument('--json', action='store_true', help='Keep complete original detail fields')
+    works.add_argument('--site-dir', type=Path, help='Maintainer: explicit offline built-site directory; never falls back online')
     args = parser.parse_args()
-    if args.kind == 'tool':
+    if args.kind == 'works':
+        library = Works(args.site_dir)
+        if args.id:
+            payload = library.detail(args.id)
+            print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else work_markdown(payload))
+        else:
+            items = library.listing(args.search, args.type, args.topic)
+            if args.json:
+                print(json.dumps({'revision': library.index['revision'], 'counts': library.index['counts'], 'items': items}, ensure_ascii=False, indent=2))
+            else:
+                for w in items:
+                    print('- [' + label(w['title']) + '](' + w['readUrl'] + ') · ' + (w['publishedAt'] or '日期待核'))
+                    print('  work ID: ' + w['id'] + ' · ' + '/'.join(w['types']))
+    elif args.kind == 'tool':
         print(tool_text(args.slug))
     elif args.id:
         print(interview_markdown(Interviews().detail(args.id)))
