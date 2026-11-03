@@ -97,6 +97,38 @@ class WorkReader(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'no online fallback'):
                 reader.Works(self.site).detail('demo-work')
 
+    def test_reader_and_listing_link_direct_body_or_selected_programme(self):
+        work = reader.Works(self.site).listing()[0]
+        self.assertIn('](https://pmnote.ai/articles/demo/)', reader.work_listing_markdown(work))
+        self.assertIn('](https://www.xiaoyuzhoufm.com/episode/abc)', reader.work_listing_markdown(work, 'podcast'))
+        body = reader.work_markdown(self.detail)
+        self.assertEqual(body.splitlines()[2], '原文：https://pmnote.ai/articles/demo/')
+        self.assertEqual(reader.work_markdown(self.detail, 'podcast').splitlines()[2], '原文：https://www.xiaoyuzhoufm.com/episode/abc')
+        self.assertIn('发布于：2026-08-22', body)
+        self.assertNotIn('已知发布', body)
+        self.assertNotIn('作品资料：', body)
+
+    def test_dates_use_beijing_day_and_unknown_is_not_displayed(self):
+        self.assertEqual(reader.publication_day('2022-10-15T17:01:29Z'), '2022-10-16')
+        self.assertEqual(reader.publication_day('2022-10-15'), '2022-10-15')
+        work = reader.Works(self.site).listing()[0]
+        work['publishedAt'] = ''
+        self.assertNotIn('发布于', reader.work_listing_markdown(work))
+        self.detail['work']['date'] = ''
+        for variant in self.detail['platformVariants'] + self.detail['localTargets']:
+            variant['publishedAt'] = None
+        body = reader.work_markdown(self.detail)
+        self.assertNotIn('发布于', body)
+        self.assertNotIn('待核', body)
+
+    def test_primary_avoids_shownotes_and_removed_source_intermediary(self):
+        targets = [{'url': '/community/library/?work=demo&panel=sources', 'local': True, 'mediaType': 'article'},
+                   {'url': '/podcast/demo/', 'local': True, 'mediaType': 'podcast'},
+                   {'url': 'https://www.xiaoyuzhoufm.com/episode/abc', 'local': False, 'mediaType': 'podcast'}]
+        self.assertEqual(reader.primary_url(targets), targets[2]['url'])
+        with self.assertRaisesRegex(ValueError, 'No direct'):
+            reader.primary_url(targets[:1])
+
 
 @unittest.skipUnless(os.environ.get('PMNOTE_CANDIDATE_DIST'), 'Explicit real candidate directory required')
 class CandidateWorks(unittest.TestCase):
@@ -106,6 +138,12 @@ class CandidateWorks(unittest.TestCase):
             total = 0
             for work in works.works:
                 detail = works.detail(work['id'])
+                direct = reader.primary_url(work['targets'])
+                self.assertNotIn('panel=sources', direct)
+                self.assertNotIn('?work=', direct)
+                self.assertIn('](' + direct + ')', reader.work_listing_markdown(work))
+                if not work['id'].startswith('thought-'):
+                    self.assertEqual(reader.work_markdown(detail).splitlines()[2], '原文：' + direct)
                 total += len(detail['platformVariants']) + len(detail['localTargets'])
                 for title in detail['work']['aliases']:
                     self.assertIn(work['id'], [w['id'] for w in works.listing(title)])

@@ -104,7 +104,7 @@ def render(data, day):
         if not isinstance(item.get('title'), str) or not item['title'].strip():
             raise ValueError('Missing thought title')
         seen.add(url)
-        groups['articles'].append('- [' + public.label(item['title']) + '](' + url + ') · 工作思考 · 写于 ' + item['writtenAt'])
+        groups['articles'].append('- [' + public.thought_title(identity) + '](' + url + ')')
     interviews = data.get('interviews')
     if not isinstance(interviews, list) or not interviews:
         raise ValueError('Missing public interviews; refusing a static-page-only index')

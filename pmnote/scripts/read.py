@@ -9,7 +9,7 @@ import re
 import unicodedata
 import urllib.error
 import urllib.request
-from urllib.parse import urlsplit
+from urllib.parse import parse_qs, urlsplit
 
 BASE = 'https://pmnote.ai'
 UUID = re.compile(r'^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$')
@@ -196,12 +196,54 @@ def target_url(identity):
 
 
 def publication_key(value):
-    if not value or re.fullmatch(r'\d{4}-\d{2}-\d{2}', value):
+    if not value:
+        return value
+    if re.fullmatch(r'\d{4}-\d{2}-\d{2}', value):
+        datetime.date.fromisoformat(value)
         return value
     date = datetime.datetime.fromisoformat(value.replace('Z', '+00:00'))
     if date.tzinfo is None:
         raise ValueError('Publication instant has no timezone')
     return date.astimezone(datetime.timezone.utc)
+
+
+def publication_day(value):
+    date = publication_key(value)
+    if isinstance(date, datetime.datetime):
+        return date.astimezone(datetime.timezone(datetime.timedelta(hours=8))).date().isoformat()
+    return date or ''
+
+
+def thought_title(identity):
+    if not isinstance(identity, str) or not re.fullmatch(r'thought-[1-9][0-9]*', identity):
+        raise ValueError('Invalid thought identity')
+    return '工作思考 · 第' + identity[8:] + '期'
+
+
+def primary_url(targets, media='all'):
+    """Match the website reading intent without linking a metadata intermediary."""
+    direct = []
+    for target in targets:
+        url = source_url(target['url'])
+        parsed = urlsplit(url)
+        query = parse_qs(parsed.query)
+        if parsed.hostname == 'pmnote.ai' and parsed.path == '/community/library/' and ('work' in query or query.get('panel') == ['sources']):
+            continue
+        direct.append(target)
+    playable = [t for t in direct if not (t.get('local', t.get('platform') == 'pmnote') and t['mediaType'] == 'podcast')]
+    matches = [t for t in playable if media == 'all' or t['mediaType'] == media]
+    chosen = next((t for t in matches if t.get('local', t.get('platform') == 'pmnote')), None)
+    chosen = chosen or next(iter(matches), None) or next(iter(playable), None) or next(iter(direct), None)
+    if chosen is None:
+        raise ValueError('No direct public reading target')
+    return source_url(chosen['url'])
+
+
+def work_listing_markdown(work, media='all'):
+    thought = work['id'].startswith('thought-')
+    title = thought_title(work['id']) if thought else work['title']
+    day = '' if thought else publication_day(work.get('publishedAt'))
+    return '- [' + label(title) + '](' + primary_url(work['targets'], media) + ')' + (' · 发布于 ' + day if day else '')
 
 
 class Works:
@@ -423,24 +465,28 @@ def thought_markdown(work):
     parser.feed(html)
     parser.close()
     body = parser.body()
-    return '\n'.join(['# ' + label(work['title']), '', '作者：Hao', '写于：' + day,
+    return '\n'.join(['# ' + thought_title(work['id']), '', '作者：Hao',
                       '站内原位阅读：' + BASE + '/community/library/?thought=' + work['id'],
                       '公开正文：' + BASE + work_path(work['id']), '原始来源：' + original, '',
-                      '范围：本站已审核的整期工作思考。日期为归档确认的写作日，不是精确首次公开时间；引用来源按正文保留。', '', body])
+                      '范围：本站已审核的整期工作思考；引用来源按正文保留。', '', body])
 
 
-def work_markdown(payload):
+def work_markdown(payload, media='all'):
     w = payload['work']
     if w.get('thought') is not None or w['id'].startswith('thought-'):
         return thought_markdown(w)
-    lines = ['# ' + label(w['title']), '', '作品资料：' + BASE + work_path(w['id']),
-             '最早已知发布：' + (w.get('date') or '待核'),
-             '范围：作品与各平台版本的公开元数据；摘要不是全文或节目转写。', '', '## 原题与别名']
+    lines = ['# ' + label(w['title']), '', '原文：' + primary_url(payload['platformVariants'] + payload['localTargets'], media)]
+    day = publication_day(w.get('date'))
+    if day:
+        lines.append('发布于：' + day)
+    lines += ['范围：作品与各平台版本的公开元数据；摘要不是全文或节目转写。', '', '## 原题与别名']
     lines += ['- ' + label(title) for title in w['aliases']]
     for v in payload['platformVariants'] + payload['localTargets']:
         lines += ['', '## ' + label(v['title']), '平台：' + PLATFORMS.get(v['platform'], v['platform']),
-                  '形式：' + v['mediaType'], '原文：' + source_url(v['url']),
-                  '版本发布：' + (v.get('publishedAt') or '待核')]
+                  '形式：' + v['mediaType'], '原文：' + source_url(v['url'])]
+        day = publication_day(v.get('publishedAt'))
+        if day:
+            lines.append('发布于：' + day)
         if v.get('updatedAt'):
             lines.append('修订：' + v['updatedAt'] + '（不替代发布日期）')
         if v.get('durationSeconds') is not None:
@@ -470,14 +516,14 @@ def main():
         library = Works(args.site_dir)
         if args.id:
             payload = library.detail(args.id)
-            print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else work_markdown(payload))
+            print(json.dumps(payload, ensure_ascii=False, indent=2) if args.json else work_markdown(payload, args.type))
         else:
             items = library.listing(args.search, args.type, args.topic)
             if args.json:
                 print(json.dumps({'revision': library.index['revision'], 'counts': library.index['counts'], 'items': items}, ensure_ascii=False, indent=2))
             else:
                 for w in items:
-                    print('- [' + label(w['title']) + '](' + w['readUrl'] + ') · ' + (w['publishedAt'] or '日期待核'))
+                    print(work_listing_markdown(w, args.type))
                     print('  work ID: ' + w['id'] + ' · ' + '/'.join(w['types']))
     elif args.kind == 'tool':
         print(tool_text(args.slug))

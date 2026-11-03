@@ -41,7 +41,9 @@ PMNOTE_CANDIDATE_DIST=/path/to/site/dist python3 -m unittest discover -s tests
 
 `--site-dir` 不会回退联网；本地模式通过只证明该候选可读，不代表公开接口已发布、生产版本绑定通过或用户已安装的 Skill 已更新。读取能力可以先发布，生成引用仍须从实际生产目录同步；不要为提前检查候选改写既有已发布索引。
 
-工作思考沿同一公开作品读取器发现，一编号一期。`works --topic work-thoughts` 查目录，`works --id thought-N` 读取已审整期正文，安全转换保留小标题、引语与来源链接。归档确认日期标为“写于”，不叫首次公开时间。网站 `agent-page-index.json` 的 `thoughts` 元数据只能来自实际 dist 的单期公开 JSON；发布后才进入文章分类索引，不把私人归档证据或正文保存到 Skill 仓库。
+工作思考沿同一公开作品读取器发现，一编号一期。`works --topic work-thoughts` 查目录，`works --id thought-N` 读取已审整期正文，安全转换保留小标题、引语与来源链接。1.5.2 起列表、正文标题和生成索引固定为“工作思考 · 第N期”，不显示写作日或发布日期，不随索引更新恢复日期标题。内部 `writtenAt`、`dateBasis` 保留作来源核验和排序，不能当作首发时间。网站 `agent-page-index.json` 的 `thoughts` 元数据只能来自实际 dist 的单期公开 JSON；发布后才进入文章分类索引，不把私人归档证据或正文保存到 Skill 仓库。
+
+普通作品日期使用北京时间“发布于”，未知则省略日期。列表引用和读取结果的首个原文链接沿网站的真实阅读目标选择：优先站内正文，播客收听直达节目，媒体筛选保留相应意图；不指向作品介绍或来源中间层。匿名 JSON 读取路径与各版本原始元数据仍保留，`--json` 用于核验来源，不把其中的归档日复制成工作思考展示日期。
 
 候选可运行 `python3 scripts/index.py verify-thoughts --source-index /path/to/dist/agent-page-index.json --site-dir /path/to/dist`。网站候选检查已调用此命令，验证发现→单期全文→日期与引用；它不联网、不生成正式索引。正式 `verify` 在部署后从匿名生产接口复核相同链路。
 

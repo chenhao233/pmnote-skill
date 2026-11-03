@@ -20,15 +20,27 @@ class Thoughts(unittest.TestCase):
                      'sourceUrl': 'https://example.com/wiki#heading', 'bodyHash': 'a' * 64,
                      'bodyHtml': '<h3>第一段思考</h3><p>' + '这是一段用于验证完整正文和日期语义的公开测试文字。' * 4 + '</p><hr /><blockquote><p>The main thing.</p></blockquote><p>参考：<a href="https://example.com/?a=1&amp;b=2">原文</a>。</p>'}}
 
-    def test_body_keeps_headings_quote_link_and_writing_day(self):
+    def test_body_keeps_issue_number_quote_links_and_hides_archive_day(self):
         text = reader.thought_markdown(self.work)
-        self.assertIn('写于：2026-11-03', text)
+        self.assertTrue(text.startswith('# 工作思考 · 第259期\n'))
+        self.assertNotIn('2026-11-03', text)
+        self.assertNotIn('写于', text)
+        self.assertNotIn('发布于', text)
         self.assertNotIn('最早已知发布', text)
         self.assertIn('## 第一段思考', text)
         self.assertIn('> The main thing.', text)
         self.assertIn('[原文](https://example.com/?a=1&b=2)', text)
         self.assertIn('https://example.com/wiki#heading', text)
         self.assertNotIn('<h3>', text)
+
+    def test_listing_keeps_issue_when_source_title_changes_to_date(self):
+        row = {'id': 'thought-259', 'title': '工作思考 2026-11-03', 'publishedAt': '2026-11-03',
+               'targets': [{'url': '/community/library/?thought=thought-259', 'local': True, 'mediaType': 'article'}]}
+        text = reader.work_listing_markdown(row)
+        self.assertIn('[工作思考 · 第259期](https://pmnote.ai/community/library/?thought=thought-259)', text)
+        self.assertNotIn('2026-11-03', text)
+        self.work['title'] = row['title']
+        self.assertTrue(reader.thought_markdown(self.work).startswith('# 工作思考 · 第259期\n'))
 
     def test_missing_body_identity_date_and_active_html_fail(self):
         changes = [lambda w: w['thought'].update(issue=258), lambda w: w.update(date='2026-02-30'),
@@ -59,6 +71,10 @@ class RealCandidate(unittest.TestCase):
                 text = reader.work_markdown(works.detail(row['id']))
                 self.assertNotIn('notion.com', text)
                 self.assertNotIn('privacyNotes', text)
+                self.assertNotIn('写于', text)
+                self.assertNotIn('发布于', text)
+                self.assertIn('第' + row['id'][8:] + '期', text)
+                self.assertNotIn(row['publishedAt'], reader.work_listing_markdown(row))
 
 
 if __name__ == '__main__':
