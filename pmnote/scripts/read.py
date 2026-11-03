@@ -1,4 +1,4 @@
-"""Read PMNote public interviews and AI tool text; Python 3.9+, no login."""
+"""Read PMNote public works, work thoughts, interviews and AI tools; Python 3.9+, no login."""
 import argparse
 import base64
 import datetime
@@ -342,11 +342,97 @@ class Works:
             raise ValueError('Work changed between index and detail; retry a new current snapshot')
         if not isinstance(work.get('aliases'), list) or not all(isinstance(t, str) for t in work['aliases']):
             raise ValueError('Missing original title aliases')
+        if work.get('thought') is not None or identity.startswith('thought-'):
+            thought_markdown(work)
         return payload  # Keep all original fields, audio, dates, provenance and summaries.
+
+
+class ThoughtHtml(HTMLParser):
+    """Convert the site's small static allowlist, preserving paragraph/link order."""
+    def __init__(self):
+        super().__init__(convert_charrefs=True)
+        self.parts, self.stack = [], []
+        self.quote = 0
+        self.links = 0
+
+    def handle_starttag(self, tag, attrs):
+        if tag not in ('h3', 'p', 'hr', 'blockquote', 'a', 'strong', 'em'):
+            raise ValueError('Unsupported thought body HTML; no partial body returned')
+        if tag == 'hr':
+            self.parts.append('\n\n---\n\n')
+            return
+        self.stack.append(tag)
+        if tag == 'h3': self.parts.append('\n\n## ')
+        elif tag == 'p': self.parts.append('\n\n' + ('> ' if self.quote else ''))
+        elif tag == 'blockquote': self.quote += 1
+        elif tag == 'strong': self.parts.append('**')
+        elif tag == 'em': self.parts.append('*')
+        elif tag == 'a':
+            href = source_url(dict(attrs).get('href'))
+            # URL punctuation must not escape the Markdown destination.
+            href = href.replace('(', '%28').replace(')', '%29')
+            self.parts.append('[')
+            self.stack.append(href)
+            self.links += 1
+
+    def handle_endtag(self, tag):
+        if tag == 'a':
+            if len(self.stack) < 2 or self.stack[-2] != 'a': raise ValueError('Unbalanced thought link')
+            href = self.stack.pop()
+            self.parts.append('](' + href + ')')
+        if not self.stack or self.stack.pop() != tag:
+            raise ValueError('Unbalanced thought body HTML')
+        if tag == 'blockquote': self.quote -= 1
+        elif tag == 'strong': self.parts.append('**')
+        elif tag == 'em': self.parts.append('*')
+        elif tag in ('h3', 'p'): self.parts.append('\n\n')
+
+    def handle_startendtag(self, tag, attrs):
+        self.handle_starttag(tag, attrs)
+        if tag != 'hr': self.handle_endtag(tag)
+
+    def handle_data(self, data):
+        if not self.stack and not data.strip(): return
+        # Preserve source text without allowing it to invent Markdown markup.
+        self.parts.append(label(data).replace('*', '\\*').replace('`', '\\`'))
+
+    def body(self):
+        if self.stack: raise ValueError('Incomplete thought body HTML')
+        text = re.sub(r'\n{3,}', '\n\n', ''.join(self.parts)).strip()
+        if len(text) < 80: raise ValueError('Thought body missing; a title or excerpt is not a full issue')
+        return text
+
+
+def thought_markdown(work):
+    thought = work.get('thought')
+    if not isinstance(thought, dict) or type(thought.get('issue')) is not int or work.get('id') != 'thought-' + str(thought['issue']):
+        raise ValueError('Thought identity mismatch')
+    day = work.get('date', '')
+    try:
+        if datetime.date.fromisoformat(day).isoformat() != day: raise ValueError()
+    except (ValueError, TypeError):
+        raise ValueError('Thought writing date missing or invalid') from None
+    if work.get('dateBasis') != 'archive-content-match':
+        raise ValueError('Thought writing date lacks an archive basis')
+    original = source_url(thought.get('sourceUrl'))
+    if not urlsplit(original).fragment or not re.fullmatch(r'[a-f0-9]{64}', thought.get('bodyHash', '')):
+        raise ValueError('Thought source anchor or body identity missing')
+    html = thought.get('bodyHtml')
+    if not isinstance(html, str): raise ValueError('Thought full body missing')
+    parser = ThoughtHtml()
+    parser.feed(html)
+    parser.close()
+    body = parser.body()
+    return '\n'.join(['# ' + label(work['title']), '', '作者：Hao', '写于：' + day,
+                      '站内原位阅读：' + BASE + '/community/library/?thought=' + work['id'],
+                      '公开正文：' + BASE + work_path(work['id']), '原始来源：' + original, '',
+                      '范围：本站已审核的整期工作思考。日期为归档确认的写作日，不是精确首次公开时间；引用来源按正文保留。', '', body])
 
 
 def work_markdown(payload):
     w = payload['work']
+    if w.get('thought') is not None or w['id'].startswith('thought-'):
+        return thought_markdown(w)
     lines = ['# ' + label(w['title']), '', '作品资料：' + BASE + work_path(w['id']),
              '最早已知发布：' + (w.get('date') or '待核'),
              '范围：作品与各平台版本的公开元数据；摘要不是全文或节目转写。', '', '## 原题与别名']

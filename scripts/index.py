@@ -88,6 +88,23 @@ def render(data, day):
             entry = f'- [{title}]({url})'
             groups[key].append(entry)
             if key == 'channels': channels[p.netloc].append(entry)
+    thoughts = data.get('thoughts', [])
+    if not isinstance(thoughts, list):
+        raise ValueError('Invalid work-thought catalog')
+    for item in thoughts:
+        identity = item.get('id', '')
+        if not re.fullmatch(r'thought-[1-9][0-9]*', identity):
+            raise ValueError('Invalid thought catalog identity')
+        url = item.get('url')
+        valid_url(url)
+        if url != public.BASE + public.work_path(identity) or url in seen:
+            raise ValueError('Duplicate or unexpected thought read URL')
+        if datetime.date.fromisoformat(item.get('writtenAt', '')).isoformat() != item['writtenAt']:
+            raise ValueError('Invalid thought writing day')
+        if not isinstance(item.get('title'), str) or not item['title'].strip():
+            raise ValueError('Missing thought title')
+        seen.add(url)
+        groups['articles'].append('- [' + public.label(item['title']) + '](' + url + ') · 工作思考 · 写于 ' + item['writtenAt'])
     interviews = data.get('interviews')
     if not isinstance(interviews, list) or not interviews:
         raise ValueError('Missing public interviews; refusing a static-page-only index')
@@ -116,6 +133,31 @@ def render(data, day):
     return result
 
 
+def verify_thoughts(data, site_dir=None):
+    expected = data.get('thoughts', [])
+    if not expected:
+        return {'indexed': 0, 'issues': []}  # Current production may predate this capability.
+    works = public.Works(site_dir)
+    actual = works.listing(topic='work-thoughts')
+    if {row['id'] for row in actual} != {row['id'] for row in expected}:
+        raise ValueError('Thought discovery differs from the published page catalog')
+    evidence = []
+    for row in expected:
+        payload = works.detail(row['id'])
+        work = payload['work']
+        thought = work['thought']
+        if (work['title'] != row['title'] or work['date'] != row['writtenAt']
+                or thought['sourceUrl'] != row['sourceUrl'] or thought['bodyHash'] != row['bodyHash']):
+            raise ValueError('Thought body changed between discovery and reading')
+        body = public.work_markdown(payload)
+        parser = public.ThoughtHtml()
+        parser.feed(thought['bodyHtml'])
+        parser.close()
+        parser.body()
+        evidence.append({'id': row['id'], 'url': row['url'], 'writtenAt': work['date'], 'bodyChars': len(body), 'referenceLinks': parser.links, 'bodyHash': thought['bodyHash']})
+    return {'indexed': len(evidence), 'issues': evidence}
+
+
 def check():
     license_body = (ROOT / 'LICENSE').read_bytes()
     if not license_body.decode('utf-8').startswith('PMNote Skill 免费使用许可\n'):
@@ -142,12 +184,21 @@ def check():
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('command', choices=['update', 'check', 'package', 'impact', 'verify'])
+    parser.add_argument('command', choices=['update', 'check', 'package', 'impact', 'verify', 'verify-thoughts'])
     parser.add_argument('--remote', action='store_true')
     parser.add_argument('--output', type=Path)
     parser.add_argument('--source-index', type=Path)
     parser.add_argument('--expected-sha')
+    parser.add_argument('--site-dir', type=Path)
     args = parser.parse_args()
+    if args.command == 'verify-thoughts':
+        if not args.source_index or not args.site_dir:
+            parser.error('verify-thoughts requires explicit --source-index and --site-dir; no online fallback')
+        evidence = verify_thoughts(json.loads(args.source_index.read_text()), args.site_dir)
+        print(json.dumps(evidence, ensure_ascii=False))
+        return
+    if args.site_dir:
+        parser.error('--site-dir is only for explicit local thought verification')
     if args.source_index and args.command != 'impact':
         parser.error('--source-index is only for candidate impact checks; published indices must come from production')
     if args.command in ('update', 'impact', 'verify') or args.remote:
@@ -180,6 +231,7 @@ def main():
                 raise ValueError('Interview changed between discovery and body read')
             tool = public.tool_text('tripo')
             evidence = {'siteSha': site_sha, 'pageIndexVersion': data.get('version'), 'interviewsIndexed': len(data['interviews']), 'interview': {'title': detail.get('title'), 'url': public.canonical(detail['id']), 'attribution': '分享人 @' + detail['sharer'], 'bodyChars': len(public.interview_markdown(detail))}, 'tool': {'url': public.BASE + '/tools/tripo/', 'bodyChars': len(tool)}}
+            evidence['thoughts'] = verify_thoughts(data)
             if args.output:
                 args.output.parent.mkdir(parents=True, exist_ok=True)
                 args.output.write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + '\n')

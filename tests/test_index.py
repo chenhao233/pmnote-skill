@@ -31,6 +31,17 @@ class SourceValidation(unittest.TestCase):
                 data['pages'][0]['url'] = value
                 index.render(data, '2026-10-03')
 
+    def test_thoughts_enter_articles_once_with_writing_day_and_public_json(self):
+        row = {'id':'thought-259', 'title':'工作思考 #259', 'url':index.public.BASE + index.public.work_path('thought-259'), 'writtenAt':'2026-11-03'}
+        self.data['thoughts'] = [row]
+        result = index.render(self.data, '2026-11-03')['articles.md']
+        self.assertIn('工作思考 #259', result)
+        self.assertIn('写于 2026-11-03', result)
+        self.assertEqual(result.count(row['url']), 1)
+        self.data['thoughts'].append(row)
+        with self.assertRaisesRegex(ValueError, 'Duplicate'):
+            index.render(self.data, '2026-11-03')
+
     def test_incomplete_and_duplicate_source_rejected(self):
         for mutate in (lambda d: d.update(catalog=[]),
                        lambda d: d['pages'].append(d['pages'][0]),
