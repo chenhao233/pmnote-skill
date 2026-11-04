@@ -47,6 +47,8 @@ PMNOTE_CANDIDATE_DIST=/path/to/site/dist python3 -m unittest discover -s tests
 
 1.5.3 起支持历史期次缺少可靠日期：公开元数据保持空值，目录标记 `writtenAt: null` 与 `dateBasis: unknown`，不使用同步日期补齐。读取器保留有序、无序和嵌套列表、原文附件链接；既有已证实日期仍严格核验。所有展示继续只有期号。
 
+1.5.4 保留历史正文引用中的 HTTP 链接，仅用于 Markdown 引用，不访问这些地址。正文来源与读取请求仍要求 HTTPS；不接受脚本、凭据或含空白的链接。
+
 候选可运行 `python3 scripts/index.py verify-thoughts --source-index /path/to/dist/agent-page-index.json --site-dir /path/to/dist`。网站候选检查已调用此命令，验证发现→单期全文→日期与引用；它不联网、不生成正式索引。正式 `verify` 在部署后从匿名生产接口复核相同链路。
 
 本地可启用推送前检查：`git config core.hooksPath scripts/hooks`。检查会拦截含个人邮箱的提交；GitHub Actions 也会检查索引与打包。

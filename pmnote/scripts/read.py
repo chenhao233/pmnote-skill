@@ -175,12 +175,13 @@ def search_key(value):
     return ''.join(c for c in value if not c.isspace() and unicodedata.category(c)[0] not in ('P', 'Z'))
 
 
-def source_url(value):
+def source_url(value, *, allow_http=False):
     if not isinstance(value, str):
         raise ValueError('Missing public source URL')
     url = BASE + value if value.startswith('/') and not value.startswith('//') else value
     parsed = urlsplit(url)
-    if parsed.scheme != 'https' or not parsed.hostname or parsed.username or parsed.password or any(c.isspace() for c in url):
+    schemes = ('http', 'https') if allow_http else ('https',)
+    if parsed.scheme not in schemes or not parsed.hostname or parsed.username or parsed.password or any(c.isspace() for c in url):
         raise ValueError('Invalid public source URL')
     return url
 
@@ -424,7 +425,9 @@ class ThoughtHtml(HTMLParser):
             self.parts.append('\n' + '    ' * (len(self.lists) - 1) + marker)
             current['next'] += 1
         elif tag == 'a':
-            href = source_url(dict(attrs).get('href'))
+            # Historical author references may use HTTP. Preserve them as
+            # Markdown destinations only; canonical sources and fetches stay HTTPS.
+            href = source_url(dict(attrs).get('href'), allow_http=True)
             # URL punctuation must not escape the Markdown destination.
             href = href.replace('(', '%28').replace(')', '%29')
             self.parts.append('[')

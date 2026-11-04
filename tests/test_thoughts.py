@@ -65,6 +65,14 @@ class Thoughts(unittest.TestCase):
         work['dateBasis'] = 'unknown'
         with self.assertRaises(ValueError): reader.thought_markdown(work)
 
+    def test_historical_http_references_do_not_relax_source_or_active_url_validation(self):
+        self.work['thought']['bodyHtml'] += '<p>参考<a href="http://example.com/source">原文</a></p>'
+        self.assertIn('[原文](http://example.com/source)', reader.thought_markdown(self.work))
+        with self.assertRaises(ValueError): reader.source_url('http://example.com/source')
+        for url in ('javascript:alert(1)', 'http://user:password@example.com', 'http://example.com/a b'):
+            self.work['thought']['bodyHtml'] = '<p><a href="' + url + '">原文</a></p>'
+            with self.assertRaises(ValueError): reader.thought_markdown(self.work)
+
     def test_ordered_nested_lists_and_links_are_preserved(self):
         self.work['thought']['bodyHtml'] += '<ol start="3"><li>先确认范围<ul><li>核对<a href="https://example.com/source">原文</a></li></ul></li><li>再决定取舍</li></ol>'
         text = reader.thought_markdown(self.work)

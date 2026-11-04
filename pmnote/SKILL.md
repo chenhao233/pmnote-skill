@@ -3,7 +3,7 @@ name: pmnote
 description: 查阅 PMNote 公开原文，分析游戏项目管理中的版本排期、交付风险、跨团队协作和美术管线，准备游戏PM求职与面试、选择游戏研发AI工具。用于这些具体问题，即使未提PMNote；不用于未经澄清的产品经理问题。
 license: Proprietary. 个人、团队工作及商业项目免费使用；再分发等边界见 LICENSE。
 metadata:
-  version: "1.5.3"
+  version: "1.5.4"
 ---
 
 # PMNote
