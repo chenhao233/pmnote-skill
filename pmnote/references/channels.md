@@ -461,6 +461,7 @@
 - [AI时代怎么做设计：Paper 创始人的 3 个共识和 2 个分歧](https://zhuanlan.zhihu.com/p/2074539689357460738)
 - [2027年，懂AI的游戏 PM 能做到什么事？](https://zhuanlan.zhihu.com/p/2075345181637874670)
 - [游戏公司的 AI 玩家](https://zhuanlan.zhihu.com/p/2081465148527622024)
+- [被 Claude 封号以后，我读了 Anthropic 289 页的招股书](https://zhuanlan.zhihu.com/p/2101101665143222397)
 - [游戏制作模型（三）——经济系统](https://zhuanlan.zhihu.com/p/260057004)
 - [游戏制作模型（四）——系统设计](https://zhuanlan.zhihu.com/p/260406573)
 - [嘉年华项目总结](https://zhuanlan.zhihu.com/p/26523225)
