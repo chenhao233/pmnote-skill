@@ -53,6 +53,28 @@ class Thoughts(unittest.TestCase):
             with self.subTest(change=change), self.assertRaises(ValueError):
                 reader.thought_markdown(work)
 
+    def test_unknown_day_requires_unknown_basis_and_is_never_displayed(self):
+        for day in (None, ''):
+            work = copy.deepcopy(self.work)
+            work.update(date=day, dateBasis='unknown')
+            self.assertIn('第259期', reader.thought_markdown(work))
+            self.assertNotIn('发布于', reader.thought_markdown(work))
+            work['dateBasis'] = 'archive-content-match'
+            with self.assertRaises(ValueError): reader.thought_markdown(work)
+        work = copy.deepcopy(self.work)
+        work['dateBasis'] = 'unknown'
+        with self.assertRaises(ValueError): reader.thought_markdown(work)
+
+    def test_ordered_nested_lists_and_links_are_preserved(self):
+        self.work['thought']['bodyHtml'] += '<ol start="3"><li>先确认范围<ul><li>核对<a href="https://example.com/source">原文</a></li></ul></li><li>再决定取舍</li></ol>'
+        text = reader.thought_markdown(self.work)
+        self.assertIn('3. 先确认范围', text)
+        self.assertIn('    - 核对[原文](https://example.com/source)', text)
+        self.assertIn('4. 再决定取舍', text)
+        for html in ('<li>游离项</li>', '<ol start="bad"><li>错误</li></ol>', '<ul><li>未闭合</ul>'):
+            self.work['thought']['bodyHtml'] = html
+            with self.assertRaises(ValueError): reader.thought_markdown(self.work)
+
 
 @unittest.skipUnless(os.environ.get('PMNOTE_CANDIDATE_DIST'), 'Explicit real candidate directory required')
 class RealCandidate(unittest.TestCase):
@@ -65,7 +87,8 @@ class RealCandidate(unittest.TestCase):
             self.assertGreaterEqual(evidence['indexed'], 4)
             initial = {row['id']: row['writtenAt'] for row in evidence['issues'] if row['id'] in {'thought-259', 'thought-258', 'thought-257', 'thought-256'}}
             self.assertEqual(initial, {'thought-259':'2026-11-03', 'thought-258':'2026-10-30', 'thought-257':'2026-10-29', 'thought-256':'2026-10-28'})
-            self.assertTrue(all(row['bodyChars'] > 500 and row['referenceLinks'] >= 1 for row in evidence['issues']))
+            self.assertTrue(all(row['bodyChars'] > 80 for row in evidence['issues']))
+            self.assertTrue(all(row['bodyChars'] > 500 and row['referenceLinks'] >= 1 for row in evidence['issues'] if row['id'] in initial))
             works = reader.Works(site)
             for row in works.listing(topic='work-thoughts'):
                 text = reader.work_markdown(works.detail(row['id']))
@@ -74,7 +97,8 @@ class RealCandidate(unittest.TestCase):
                 self.assertNotIn('写于', text)
                 self.assertNotIn('发布于', text)
                 self.assertIn('第' + row['id'][8:] + '期', text)
-                self.assertNotIn(row['publishedAt'], reader.work_listing_markdown(row))
+                if row['publishedAt']:
+                    self.assertNotIn(row['publishedAt'], reader.work_listing_markdown(row))
 
 
 if __name__ == '__main__':

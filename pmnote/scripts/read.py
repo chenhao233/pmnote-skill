@@ -396,19 +396,33 @@ class ThoughtHtml(HTMLParser):
         self.parts, self.stack = [], []
         self.quote = 0
         self.links = 0
+        self.lists = []
 
     def handle_starttag(self, tag, attrs):
-        if tag not in ('h3', 'p', 'hr', 'blockquote', 'a', 'strong', 'em'):
+        if tag not in ('h3', 'p', 'hr', 'blockquote', 'a', 'strong', 'em', 'ul', 'ol', 'li'):
             raise ValueError('Unsupported thought body HTML; no partial body returned')
         if tag == 'hr':
             self.parts.append('\n\n---\n\n')
             return
+        if tag == 'li' and (not self.stack or self.stack[-1] not in ('ul', 'ol')):
+            raise ValueError('List item outside a thought list')
         self.stack.append(tag)
         if tag == 'h3': self.parts.append('\n\n## ')
         elif tag == 'p': self.parts.append('\n\n' + ('> ' if self.quote else ''))
         elif tag == 'blockquote': self.quote += 1
         elif tag == 'strong': self.parts.append('**')
         elif tag == 'em': self.parts.append('*')
+        elif tag in ('ul', 'ol'):
+            start = dict(attrs).get('start', '1')
+            if not re.fullmatch(r'[1-9][0-9]{0,5}', start):
+                raise ValueError('Invalid thought list start')
+            self.lists.append({'tag': tag, 'next': int(start)})
+            self.parts.append('\n')
+        elif tag == 'li':
+            current = self.lists[-1]
+            marker = str(current['next']) + '. ' if current['tag'] == 'ol' else '- '
+            self.parts.append('\n' + '    ' * (len(self.lists) - 1) + marker)
+            current['next'] += 1
         elif tag == 'a':
             href = source_url(dict(attrs).get('href'))
             # URL punctuation must not escape the Markdown destination.
@@ -428,6 +442,11 @@ class ThoughtHtml(HTMLParser):
         elif tag == 'strong': self.parts.append('**')
         elif tag == 'em': self.parts.append('*')
         elif tag in ('h3', 'p'): self.parts.append('\n\n')
+        elif tag in ('ul', 'ol'):
+            if not self.lists or self.lists.pop()['tag'] != tag:
+                raise ValueError('Unbalanced thought list')
+            self.parts.append('\n')
+        elif tag == 'li': self.parts.append('\n')
 
     def handle_startendtag(self, tag, attrs):
         self.handle_starttag(tag, attrs)
@@ -450,12 +469,15 @@ def thought_markdown(work):
     if not isinstance(thought, dict) or type(thought.get('issue')) is not int or work.get('id') != 'thought-' + str(thought['issue']):
         raise ValueError('Thought identity mismatch')
     day = work.get('date', '')
-    try:
-        if datetime.date.fromisoformat(day).isoformat() != day: raise ValueError()
-    except (ValueError, TypeError):
-        raise ValueError('Thought writing date missing or invalid') from None
-    if work.get('dateBasis') != 'archive-content-match':
-        raise ValueError('Thought writing date lacks an archive basis')
+    if day in (None, '') and work.get('dateBasis') == 'unknown':
+        pass
+    else:
+        try:
+            if datetime.date.fromisoformat(day).isoformat() != day: raise ValueError()
+        except (ValueError, TypeError):
+            raise ValueError('Thought writing date missing or invalid') from None
+        if work.get('dateBasis') != 'archive-content-match':
+            raise ValueError('Thought writing date lacks an archive basis')
     original = source_url(thought.get('sourceUrl'))
     if not urlsplit(original).fragment or not re.fullmatch(r'[a-f0-9]{64}', thought.get('bodyHash', '')):
         raise ValueError('Thought source anchor or body identity missing')

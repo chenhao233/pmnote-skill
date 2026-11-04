@@ -99,7 +99,10 @@ def render(data, day):
         valid_url(url)
         if url != public.BASE + public.work_path(identity) or url in seen:
             raise ValueError('Duplicate or unexpected thought read URL')
-        if datetime.date.fromisoformat(item.get('writtenAt', '')).isoformat() != item['writtenAt']:
+        thought_day = item.get('writtenAt', '')
+        if thought_day is None and item.get('dateBasis') == 'unknown':
+            pass
+        elif not isinstance(thought_day, str) or datetime.date.fromisoformat(thought_day).isoformat() != thought_day:
             raise ValueError('Invalid thought writing day')
         if not isinstance(item.get('title'), str) or not item['title'].strip():
             raise ValueError('Missing thought title')
@@ -146,7 +149,8 @@ def verify_thoughts(data, site_dir=None):
         payload = works.detail(row['id'])
         work = payload['work']
         thought = work['thought']
-        if (work['title'] != row['title'] or work['date'] != row['writtenAt']
+        if (work['title'] != row['title'] or (work['date'] or None) != row['writtenAt']
+                or (row['writtenAt'] is None and (work.get('dateBasis') != 'unknown' or row.get('dateBasis') != 'unknown'))
                 or thought['sourceUrl'] != row['sourceUrl'] or thought['bodyHash'] != row['bodyHash']):
             raise ValueError('Thought body changed between discovery and reading')
         body = public.work_markdown(payload)

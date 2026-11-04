@@ -52,6 +52,14 @@ class SourceValidation(unittest.TestCase):
                 mutate(data)
                 index.render(data, '2026-10-03')
 
+    def test_unknown_thought_day_requires_explicit_basis(self):
+        row = {'id':'thought-1', 'title':'工作思考 · 第1期', 'url':index.public.BASE + index.public.work_path('thought-1'), 'writtenAt':None, 'dateBasis':'unknown'}
+        self.data['thoughts'] = [row]
+        body = index.render(self.data, '2026-11-04')['articles.md']
+        self.assertIn('第1期', body)
+        row.pop('dateBasis')
+        with self.assertRaises(ValueError): index.render(self.data, '2026-11-04')
+
     def test_title_cannot_inject_markdown_link(self):
         self.data['pages'][0]['title'] = '[click](https://example.com) <script>'
         result = index.render(self.data, '2026-10-03')['articles.md']
