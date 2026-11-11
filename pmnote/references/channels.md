@@ -377,6 +377,7 @@
 - [【AI实战手册2027】第17章｜买了AI工具没人用？先降门槛、拿授权，再接住各方顾虑](https://www.xiaoyuzhoufm.com/episode/6ade26c3c96c8942ec1211e7)
 - [【AI实战手册2027】第18章｜AI费用越花越多，该砍哪一块？游戏团队的算账和治理](https://www.xiaoyuzhoufm.com/episode/6ade2730c96c8942ec12120f)
 - [第195期 - 被 Claude 封号以后，我读了 Anthropic 289 页的招股书](https://www.xiaoyuzhoufm.com/episode/6ae737e297726cd4675b0673)
+- [第196期 - PM 太能扛，不一定是好事｜往上汇报到底该讲什么](https://www.xiaoyuzhoufm.com/episode/6aec98016381f0f964c467c1)
 
 ## 知乎
 
