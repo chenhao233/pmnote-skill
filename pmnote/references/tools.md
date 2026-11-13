@@ -36,6 +36,7 @@
 - [Recraft](https://pmnote.ai/tools/recraft)
 - [RenderDoc MCP · scarletfantasy](https://pmnote.ai/tools/renderdoc-mcp)
 - [幻界 Reveric](https://pmnote.ai/tools/reveric)
+- [Rexa](https://pmnote.ai/tools/rexa)
 - [Rodin](https://pmnote.ai/tools/rodin)
 - [SkillDeck](https://pmnote.ai/tools/skilldeck)
 - [Skybox AI](https://pmnote.ai/tools/skybox-ai)

@@ -378,6 +378,7 @@
 - [【AI实战手册2027】第18章｜AI费用越花越多，该砍哪一块？游戏团队的算账和治理](https://www.xiaoyuzhoufm.com/episode/6ade2730c96c8942ec12120f)
 - [第195期 - 被 Claude 封号以后，我读了 Anthropic 289 页的招股书](https://www.xiaoyuzhoufm.com/episode/6ae737e297726cd4675b0673)
 - [第196期 - PM 太能扛，不一定是好事｜往上汇报到底该讲什么](https://www.xiaoyuzhoufm.com/episode/6aec98016381f0f964c467c1)
+- [第197期 - 喝了这杯 AI，代价呢？聊聊游戏人的2026【Hao&游戏人有态度串台】](https://www.xiaoyuzhoufm.com/episode/6af2c5305b7c4709bfe3ea28)
 
 ## 知乎
 
@@ -461,9 +462,12 @@
 - [Cursor招聘负责人：别在漏斗里碰运气，去找到那50个人](https://zhuanlan.zhihu.com/p/2074524837062755243)
 - [AI时代怎么做设计：Paper 创始人的 3 个共识和 2 个分歧](https://zhuanlan.zhihu.com/p/2074539689357460738)
 - [2027年，懂AI的游戏 PM 能做到什么事？](https://zhuanlan.zhihu.com/p/2075345181637874670)
+- [游戏公司 AI 转型，从"做几个 Agent"开始？](https://zhuanlan.zhihu.com/p/2080280786020967181)
 - [游戏公司的 AI 玩家](https://zhuanlan.zhihu.com/p/2081465148527622024)
 - [被 Claude 封号以后，我读了 Anthropic 289 页的招股书](https://zhuanlan.zhihu.com/p/2101101665143222397)
 - [PM太能扛，不一定是好事｜汇报到底该讲什么](https://zhuanlan.zhihu.com/p/2101817515441758869)
+- [PM 太能扛，不一定是好事](https://zhuanlan.zhihu.com/p/2101988256896258856)
+- [喝了这杯 AI，代价呢？和大盛聊游戏人的 2026](https://zhuanlan.zhihu.com/p/2103483664785056190)
 - [游戏制作模型（三）——经济系统](https://zhuanlan.zhihu.com/p/260057004)
 - [游戏制作模型（四）——系统设计](https://zhuanlan.zhihu.com/p/260406573)
 - [嘉年华项目总结](https://zhuanlan.zhihu.com/p/26523225)
@@ -677,6 +681,7 @@
 - [偷偷聊聊八卦...](https://www.bilibili.com/video/BV1JMFce4ENn/)
 - [一个工作日](https://www.bilibili.com/video/BV1JpDQY2EvZ/)
 - [游戏行业PM的10月总结](https://www.bilibili.com/video/BV1jR1uBiEAw/)
+- [喝了这杯 AI，代价呢？聊聊游戏人的2026【Hao&游戏人有态度串台】](https://www.bilibili.com/video/BV1jTWg6QEz9/)
 - [聊聊游戏行业面试丨校招PM](https://www.bilibili.com/video/BV1ju4y1e7ig/)
 - [啥是游戏研发PM，这个岗位需要做些什么呢](https://www.bilibili.com/video/BV1ju4y1s7AF/)
 - [秋招面试题：游戏PM如何处理团队内部的冲突？](https://www.bilibili.com/video/BV1k3x1eWEsp/)
