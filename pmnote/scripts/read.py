@@ -9,7 +9,7 @@ import re
 import unicodedata
 import urllib.error
 import urllib.request
-from urllib.parse import parse_qs, urlsplit
+from urllib.parse import parse_qs, urlsplit, urljoin, urlencode
 
 BASE = 'https://pmnote.ai'
 COMMUNITY_ORIGIN = 'https://thilhtqbtpxbgszpnlwn.supabase.co'
@@ -532,6 +532,92 @@ def work_markdown(payload, media='all'):
     return '\n'.join(lines)
 
 
+PUBLIC_SECTIONS = {
+    'ask': ('/ask/', '问问 Hao · AI 公开问答', 'data-ex-list'),
+    'discussions': ('/community/discussions/', '社区公开讨论', 'id'),
+    'hiring': ('/community/hiring/', '公开招人信息', 'data-hiring-list'),
+    'job-seekers': ('/community/job-seekers/', '自愿公开的求职资料', 'data-careers-list'),
+}
+
+
+class PublicPageText(HTMLParser):
+    """Read only the designated public content containers, never private UI."""
+    VOID = {'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr'}
+
+    def __init__(self, section):
+        super().__init__(convert_charrefs=True)
+        self.section, self.stack, self.parts = section, [], []
+        self.request_time, self.containers, self.source_commit = False, 0, None
+
+    def handle_starttag(self, tag, pairs):
+        attrs = dict(pairs)
+        if tag == 'body':
+            self.request_time = attrs.get('data-public-rendered') == 'true'
+        if tag == 'meta' and attrs.get('name') == 'pmnote-public-source':
+            self.source_commit = attrs.get('content')
+        key = PUBLIC_SECTIONS[self.section][2]
+        target = key in attrs if key != 'id' else attrs.get('id') in ('feed', 'post-detail', 'replies')
+        parent = self.stack[-1] if self.stack else {'active': False, 'skip': False}
+        frame = {'tag': tag, 'active': parent['active'] or target,
+                 'skip': parent['skip'] or tag in ('script', 'style', 'template', 'button') or 'hidden' in attrs}
+        if target and not frame['skip']:
+            self.containers += 1
+        if frame['active'] and not frame['skip']:
+            if tag in ('h1', 'h2', 'h3', 'h4'):
+                self.parts.append('\n\n' + '#' * min(int(tag[1]) + 1, 4) + ' ')
+            elif tag in ('p', 'div', 'article', 'dt', 'dd', 'br', 'li'):
+                self.parts.append('\n' + ('- ' if tag == 'li' else ''))
+            if tag == 'a' and attrs.get('href'):
+                url = urljoin(BASE, attrs['href'])
+                parsed = urlsplit(url)
+                if parsed.scheme in ('https', 'http') and not parsed.username and not parsed.password:
+                    frame['link'] = url
+                    self.parts.append('[')
+        self.stack.append(frame)
+        if tag in self.VOID:
+            self.handle_endtag(tag)
+
+    def handle_endtag(self, tag):
+        if not self.stack or self.stack[-1]['tag'] != tag:
+            return
+        frame = self.stack.pop()
+        if frame.get('link'):
+            self.parts.append('](' + frame['link'] + ')')
+        if frame['active'] and not frame['skip'] and tag in ('p', 'div', 'article', 'h1', 'h2', 'h3', 'h4', 'dt', 'dd', 'li'):
+            self.parts.append('\n')
+
+    def handle_data(self, data):
+        if self.stack and self.stack[-1]['active'] and not self.stack[-1]['skip']:
+            self.parts.append(data)
+
+
+def public_page(section, entry_id=None, page=0, reader=request, expected_sha=None):
+    if section not in PUBLIC_SECTIONS or not isinstance(page, int) or not 0 <= page <= 1000:
+        raise ValueError('Invalid public section or page')
+    if entry_id is not None and not UUID.fullmatch(entry_id):
+        raise ValueError('Invalid public entry id')
+    if expected_sha is not None and not re.fullmatch(r'[a-f0-9]{7,40}', expected_sha):
+        raise ValueError('Invalid expected public source SHA')
+    route, title, _ = PUBLIC_SECTIONS[section]
+    params = {}
+    if entry_id:
+        params[{'ask': 'question', 'discussions': 'post'}.get(section, 'id')] = entry_id
+    elif page:
+        params['page'] = page
+    url = BASE + route + ('?' + urlencode(params) if params else '')
+    parser = PublicPageText(section)
+    parser.feed(reader(url))
+    body = re.sub(r'\n{3,}', '\n\n', ''.join(parser.parts)).strip()
+    if not parser.request_time or not parser.containers:
+        raise ValueError('No current public HTML body verified; do not infer content from a loading shell')
+    if expected_sha is not None and (not re.fullmatch(r'[a-f0-9]{40}', parser.source_commit or '') or not parser.source_commit.startswith(expected_sha)):
+        raise ValueError('Public HTML belongs to a different source version')
+    if not body:
+        body = '当前没有公开条目。'
+    origin = '用户问题与 AI 整理的回答，不代表 Hao 本人回复。' if section == 'ask' else '当前公开发布内容；引用时保留原发布者与来源。'
+    return '# ' + title + '\n\n原文：' + url + '\n' + origin + '\n\n' + body
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     sub = parser.add_subparsers(dest='kind', required=True)
@@ -547,8 +633,15 @@ def main():
     works.add_argument('--topic', default='all')
     works.add_argument('--json', action='store_true', help='Keep complete original detail fields')
     works.add_argument('--site-dir', type=Path, help='Maintainer: explicit offline built-site directory; never falls back online')
+    public = sub.add_parser('public', help='Read current anonymous question/discussion/recruiting HTML')
+    public.add_argument('section', choices=tuple(PUBLIC_SECTIONS))
+    public.add_argument('--id')
+    public.add_argument('--page', type=int, default=0)
+    public.add_argument('--expected-sha', help='Maintainer: verify the deployed renderer source version')
     args = parser.parse_args()
-    if args.kind == 'works':
+    if args.kind == 'public':
+        print(public_page(args.section, args.id, args.page, expected_sha=args.expected_sha))
+    elif args.kind == 'works':
         library = Works(args.site_dir)
         if args.id:
             payload = library.detail(args.id)
