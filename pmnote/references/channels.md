@@ -628,6 +628,7 @@
 - [【深度】游戏PM正在变成一个新物种——团队的FDE](https://www.bilibili.com/video/BV19EJJ68EN6/)
 - [想进腾讯网易米哈游，选美术PM还是研发PM？](https://www.bilibili.com/video/BV19GPcetE2h/)
 - [11月了！秋招还没offer怎么办](https://www.bilibili.com/video/BV1A3DBYmEBv/)
+- [游戏公司的AI中场：一个“先不裁员”的承诺](https://www.bilibili.com/video/BV1A4Wb6DEDT/)
 - [排期全流程，从需求到落地6步走](https://www.bilibili.com/video/BV1a9ZiBNE3L/)
 - [Deepseek锐评游戏PM（狗头）](https://www.bilibili.com/video/BV1aCFeerEAe/)
 - [这份高薪PM岗能投吗（拆解JD](https://www.bilibili.com/video/BV1aEDrYzEYg/)
