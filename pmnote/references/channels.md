@@ -378,6 +378,7 @@
 - [【AI实战手册2027】第18章｜AI费用越花越多，该砍哪一块？游戏团队的算账和治理](https://www.xiaoyuzhoufm.com/episode/6ade2730c96c8942ec12120f)
 - [第195期 - 被 Claude 封号以后，我读了 Anthropic 289 页的招股书](https://www.xiaoyuzhoufm.com/episode/6ae737e297726cd4675b0673)
 - [第196期 - PM 太能扛，不一定是好事｜往上汇报到底该讲什么](https://www.xiaoyuzhoufm.com/episode/6aec98016381f0f964c467c1)
+- [第198期 - 游戏公司的AI中场：一个“先不裁员”的承诺](https://www.xiaoyuzhoufm.com/episode/6af26e43b4a4e20202f7667b)
 - [第197期 - 喝了这杯 AI，代价呢？聊聊游戏人的2026【Hao&游戏人有态度串台】](https://www.xiaoyuzhoufm.com/episode/6af2c5305b7c4709bfe3ea28)
 
 ## 知乎

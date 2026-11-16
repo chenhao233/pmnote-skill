@@ -200,6 +200,7 @@
 - [字节游戏 游戏主PM（全球知名IP动作项目） - ZERO36工作室 招聘｜上海｜PMNote 游戏 PM 岗位库](https://pmnote.ai/job-market/jobs/game-ea4c7a1e-7682984652437195013)
 - [字节游戏 游戏监修PM实习生 - Glow Studio 招聘｜广州｜PMNote 游戏 PM 岗位库](https://pmnote.ai/job-market/jobs/game-ea4c7a1e-7683082923512711477)
 - [字节游戏 游戏APM实习生 - 绿洲工作室 招聘｜北京｜PMNote 游戏 PM 岗位库](https://pmnote.ai/job-market/jobs/game-ea4c7a1e-7683811994847774981)
+- [字节游戏 游戏制作人 - 绿洲工作室 招聘｜北京 / 深圳 / 广州 / 上海｜PMNote 游戏 PM 岗位库](https://pmnote.ai/job-market/jobs/game-ea4c7a1e-7694204659063064837)
 - [字节游戏 游戏日语监修PM - Glow Studio 招聘｜广州｜PMNote 游戏 PM 岗位库](https://pmnote.ai/job-market/jobs/game-ea4c7a1e-7699002695747881221)
 - [字节游戏 英语本地化项目经理 - Bluesea Studio 招聘｜北京｜PMNote 游戏 PM 岗位库](https://pmnote.ai/job-market/jobs/game-ea4c7a1e-7703463477508835589)
 - [搜狐畅游 【2027届秋招】美术项目管理（APM） 招聘｜北京｜PMNote 游戏 PM 岗位库](https://pmnote.ai/job-market/jobs/game-edd6036c-7d607ab9-0331-4e7e-8dce-399a9a3225ea)
