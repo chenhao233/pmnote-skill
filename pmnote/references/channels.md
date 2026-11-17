@@ -468,6 +468,7 @@
 - [被 Claude 封号以后，我读了 Anthropic 289 页的招股书](https://zhuanlan.zhihu.com/p/2101101665143222397)
 - [PM太能扛，不一定是好事｜汇报到底该讲什么](https://zhuanlan.zhihu.com/p/2101817515441758869)
 - [PM 太能扛，不一定是好事](https://zhuanlan.zhihu.com/p/2101988256896258856)
+- [游戏公司的AI中场：一个“先不裁员”的承诺](https://zhuanlan.zhihu.com/p/2103272753319108961)
 - [喝了这杯 AI，代价呢？和大盛聊游戏人的 2026](https://zhuanlan.zhihu.com/p/2103483664785056190)
 - [游戏制作模型（三）——经济系统](https://zhuanlan.zhihu.com/p/260057004)
 - [游戏制作模型（四）——系统设计](https://zhuanlan.zhihu.com/p/260406573)

@@ -62,6 +62,7 @@
 - [工作思考 · 第258期](https://pmnote.ai/community/library/data/works/dGhvdWdodC0yNTg.json)
 - [工作思考 · 第257期](https://pmnote.ai/community/library/data/works/dGhvdWdodC0yNTc.json)
 - [工作思考 · 第256期](https://pmnote.ai/community/library/data/works/dGhvdWdodC0yNTY.json)
+- [工作思考 · 第268期](https://pmnote.ai/community/library/data/works/dGhvdWdodC0yNjg.json)
 - [工作思考 · 第267期](https://pmnote.ai/community/library/data/works/dGhvdWdodC0yNjc.json)
 - [工作思考 · 第266期](https://pmnote.ai/community/library/data/works/dGhvdWdodC0yNjY.json)
 - [工作思考 · 第265期](https://pmnote.ai/community/library/data/works/dGhvdWdodC0yNjU.json)
