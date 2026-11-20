@@ -25,7 +25,29 @@ class PublicPages(unittest.TestCase):
             urls = []
             text = reader.public_page(section, page=1, reader=lambda url: urls.append(url) or '<body data-public-rendered="true"><div ' + attr + '><h2>公开条目</h2><p>当前正文</p></div></body>')
             self.assertIn('当前正文', text)
-            self.assertEqual(urls, [reader.BASE + reader.PUBLIC_SECTIONS[section][0] + '?page=1'])
+            query = '?type=opening&page=1' if section == 'hiring' else '?page=1'
+            self.assertEqual(urls, [reader.BASE + reader.PUBLIC_SECTIONS[section][0] + query])
+
+    def test_hiring_list_excludes_profiles_before_pagination(self):
+        urls = []
+
+        def fetch(url):
+            urls.append(url)
+            if url.endswith('?type=opening'):
+                return '<body data-public-rendered="true"><article data-hiring-list><h2>较早且仍公开的招人信息</h2></article></body>'
+            # The combined directory may contain only newer profiles on its first page.
+            return '<body data-public-rendered="true"><article>较新的求职资料</article><span data-hiring-list></span></body>'
+
+        text = reader.public_page('hiring', reader=fetch)
+        self.assertEqual(urls, [reader.BASE + '/community/hiring/?type=opening'])
+        self.assertIn('较早且仍公开的招人信息', text)
+
+    def test_hiring_detail_preserves_old_direct_url(self):
+        urls = []
+        html = '<body data-public-rendered="true"><article data-hiring-list><h2>岗位职责原文</h2></article></body>'
+        text = reader.public_page('hiring', ID, reader=lambda url: urls.append(url) or html)
+        self.assertEqual(urls, [reader.BASE + '/community/hiring/?id=' + ID])
+        self.assertIn('岗位职责原文', text)
 
     def test_discussion_direct_body_and_replies(self):
         text = reader.public_page('discussions', ID, reader=lambda url: '<body data-public-rendered="true"><div id="post-detail"><h1>帖子</h1><p>完整正文</p></div><div id="replies"><p>公开回复</p></div></body>')

@@ -53,6 +53,18 @@ def valid_url(url):
     return p
 
 
+def verify_interview_detail(sample, detail):
+    public.validate_interview(sample)
+    public.validate_interview(detail)
+    identity = lambda item: (item['id'], item.get('title') or item['originalTitle'], item['sharer'], item['status'])
+    if identity(sample) != identity(detail):
+        raise ValueError('Interview changed between discovery and body read')
+    body = public.interview_markdown(detail)
+    if (sample.get('body') or sample.get('sections')) and public.interview_markdown(sample) != body:
+        raise ValueError('Interview changed between discovery and body read')
+    return body
+
+
 def render(data, day):
     if data.get('schemaVersion') != 3 or data.get('siteBase') != 'https://pmnote.ai':
         raise ValueError('Unexpected source schema')
@@ -231,10 +243,9 @@ def main():
         if args.command == 'verify':
             sample = next((x for x in data['interviews'] if x.get('company') == '腾讯'), data['interviews'][0])
             detail = public.Interviews().detail(sample['id'])
-            if public.interview_markdown(sample) != public.interview_markdown(detail):
-                raise ValueError('Interview changed between discovery and body read')
+            body = verify_interview_detail(sample, detail)
             tool = public.tool_text('tripo')
-            evidence = {'siteSha': site_sha, 'pageIndexVersion': data.get('version'), 'interviewsIndexed': len(data['interviews']), 'interview': {'title': detail.get('title'), 'url': public.canonical(detail['id']), 'attribution': '分享人 @' + detail['sharer'], 'bodyChars': len(public.interview_markdown(detail))}, 'tool': {'url': public.BASE + '/tools/tripo/', 'bodyChars': len(tool)}}
+            evidence = {'siteSha': site_sha, 'pageIndexVersion': data.get('version'), 'interviewsIndexed': len(data['interviews']), 'interview': {'title': detail.get('title'), 'url': public.canonical(detail['id']), 'attribution': '分享人 @' + detail['sharer'], 'bodyChars': len(body)}, 'tool': {'url': public.BASE + '/tools/tripo/', 'bodyChars': len(tool)}}
             evidence['thoughts'] = verify_thoughts(data)
             if args.output:
                 args.output.parent.mkdir(parents=True, exist_ok=True)

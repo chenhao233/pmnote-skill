@@ -62,16 +62,115 @@ def canonical(entry_id):
 
 
 class PublicConfig(HTMLParser):
+    def __init__(self):
+        super().__init__()
+        self.values = {}
+        self.archive = None
+        self.reading_archive = False
+
     def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
         if tag == 'body':
-            self.values = dict(attrs)
+            self.values = attrs
+        if tag == 'script' and attrs.get('id') == 'interview-archive' and attrs.get('type') == 'application/json':
+            if self.archive is not None:
+                raise ValueError('Duplicate public interview archive')
+            self.archive = []
+            self.reading_archive = True
+
+    def handle_data(self, data):
+        if self.reading_archive:
+            self.archive.append(data)
+
+    def handle_endtag(self, tag):
+        if tag == 'script':
+            self.reading_archive = False
+
+
+class InterviewArchiveText(HTMLParser):
+    kinds = {'questions', 'reflection', 'author_reflection', 'context', 'narrative'}
+
+    def __init__(self):
+        super().__init__()
+        self.entry_id = None
+        self.active = False
+        self.field = None
+        self.section = None
+        self.title = ''
+        self.attribution = ''
+        self.sections = []
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        if tag == 'article' and 'data-interview-archive-id' in attrs:
+            if self.entry_id is not None:
+                raise ValueError('Duplicate interview archive body')
+            self.entry_id = attrs['data-interview-archive-id']
+            self.active = True
+        if not self.active:
+            return
+        if tag == 'section' and 'data-interview-section' in attrs:
+            kind = attrs['data-interview-section']
+            if kind not in self.kinds:
+                raise ValueError('Unknown interview archive section')
+            self.section = {'kind': kind, 'heading': '', 'items': []}
+        if tag == 'h1':
+            self.field = (tag, 'title', [])
+        elif self.section is not None and tag in ('h2', 'p'):
+            self.field = (tag, 'heading' if tag == 'h2' else 'item', [])
+        elif tag == 'p' and 'attribution' in (attrs.get('class') or '').split():
+            self.field = (tag, 'attribution', [])
+
+    def handle_data(self, data):
+        if self.field:
+            self.field[2].append(data)
+
+    def handle_endtag(self, tag):
+        if not self.active:
+            return
+        if self.field and self.field[0] == tag:
+            _, key, fragments = self.field
+            value = ''.join(fragments).strip()
+            self.field = None
+            if key in ('title', 'attribution'):
+                setattr(self, key, value)
+            elif key == 'heading':
+                self.section['heading'] = value
+            elif value:
+                self.section['items'].append(value)
+        if tag == 'section' and self.section is not None:
+            if not self.section['heading'] or not self.section['items']:
+                raise ValueError('Incomplete interview archive section')
+            self.sections.append(self.section)
+            self.section = None
+        if tag == 'article':
+            self.active = False
 
 
 class Interviews:
     def __init__(self):
         parser = PublicConfig()
         parser.feed(request(BASE + '/community/experiences/'))
-        attrs = getattr(parser, 'values', {})
+        attrs = parser.values
+        self.archive = None
+        if attrs.get('data-public-reading') == 'true':
+            self.url = BASE + '/api/public-reading/interviews'
+            self.headers = {}
+            if parser.archive is None:
+                raise ValueError('Public interview archive metadata missing')
+            archive = json.loads(''.join(parser.archive))
+            if not isinstance(archive, list):
+                raise ValueError('Invalid public interview archive')
+            self.archive = {}
+            for item in archive:
+                if not isinstance(item, dict) or not re.fullmatch(r'ix-\d{2}', item.get('sourceKey', '')):
+                    raise ValueError('Invalid approved interview archive member')
+                entry = {**item, 'title': item.get('originalTitle') or item.get('title'), 'status': 'published'}
+                validate_interview(entry)
+                if entry['id'] in self.archive:
+                    raise ValueError('Duplicate public interview archive member')
+                self.archive[entry['id']] = entry
+            return
         url, key = attrs.get('data-community-url', ''), attrs.get('data-community-key', '')
         if url != COMMUNITY_ORIGIN or not key:
             raise ValueError('Public interview connection missing; use the website browser')
@@ -110,12 +209,36 @@ class Interviews:
                 # When supplied, total is an additional completeness check.
                 if total is not None and (not isinstance(total, int) or total != len(items)):
                     raise ValueError('Incomplete interview coverage')
-                return items
+                archive = getattr(self, 'archive', None)
+                if archive is None:
+                    return items
+                return [item for item in items if item['id'] not in archive] + self.archive_matches(query)
         raise ValueError('Interview pagination limit reached; incomplete result rejected')
+
+    def archive_matches(self, query):
+        if not self.archive or not query.strip():
+            return list(self.archive.values())
+        search = get_json(BASE + '/community/experiences/archive-search.json')
+        if not isinstance(search, dict) or not all(isinstance(search.get(entry_id), str) for entry_id in self.archive):
+            raise ValueError('Incomplete interview archive search')
+        normalize = lambda text: unicodedata.normalize('NFKC', text).casefold()
+        needle = normalize(query.strip())
+        return [entry for entry_id, entry in self.archive.items() if needle in normalize(' '.join(
+            [search[entry_id]] + [entry.get(key) or '' for key in
+                                  ('title', 'company', 'roleText', 'sharer', 'summary', 'roundLabel', 'recruitmentType')]))]
 
     def detail(self, entry_id):
         canonical(entry_id)
-        item = self.call('interviews_detail', {'id': entry_id})
+        archived = (getattr(self, 'archive', None) or {}).get(entry_id)
+        if archived:
+            parser = InterviewArchiveText()
+            parser.feed(request(BASE + '/community/experiences/' + entry_id + '/'))
+            if (parser.entry_id != entry_id or parser.title != archived['title'] or
+                    parser.attribution != '分享人 @' + archived['sharer'] or not parser.sections):
+                raise ValueError('Interview archive identity, attribution or body mismatch')
+            item = {**archived, 'sections': parser.sections}
+        else:
+            item = self.call('interviews_detail', {'id': entry_id})
         validate_interview(item)
         if item['id'] != entry_id:
             raise ValueError('Interview detail identity mismatch')
@@ -123,6 +246,8 @@ class Interviews:
 
 
 def validate_interview(item):
+    if not isinstance(item, dict):
+        raise ValueError('Invalid public interview')
     canonical(item.get('id', ''))
     if item.get('status') != 'published' or not item.get('sharer') or not (item.get('title') or item.get('originalTitle')):
         raise ValueError('Not a published attributed interview')
@@ -134,20 +259,24 @@ def interview_markdown(item):
              '原文：' + canonical(item['id']), '分享人 @' + label(item['sharer']), '',
              '内容范围：PMNote 当前公开分享文字；面试题与作者复盘按原文区分，不代表 Hao 本人的经历或建议。', '']
     for key, title in [('company', '公司'), ('role', '原岗位'), ('roundLabel', '轮次'), ('recruitmentType', '招聘类型'), ('interviewDate', '面试时间'), ('outcome', '结果')]:
+        if key == 'role' and not item.get(key) and item.get('roleText'):
+            lines.append(title + '：' + label(item['roleText']))
         if item.get(key):
             lines.append(title + '：' + label(item[key]))
     if item.get('summary'):
         lines += ['', item['summary'], '']
     sections = item.get('sections') or []
-    if sections:
-        for section in sections:
-            lines += ['## ' + label(section['heading']), '']
-            lines += ['- ' + text for text in section['items']]
-            lines += ['']
-    elif isinstance(item.get('body'), str) and item['body'].strip():
-        lines += [item['body'], '']
-    else:
+    prose = item['body'].strip() if isinstance(item.get('body'), str) else ''
+    if not prose and not sections:
         raise ValueError('Public interview body missing; title is not evidence')
+    items = [text for section in sections for text in section['items']]
+    with_headings = ' '.join(text for section in sections for text in [section['heading'], *section['items']])
+    if prose and ' '.join(prose.split()) not in [' '.join(text.split()) for text in [with_headings, ' '.join(items), *items]]:
+        lines += [prose, '']
+    for section in sections:
+        lines += ['## ' + label(section['heading']), '']
+        lines += ['- ' + text for text in section['items']]
+        lines += ['']
     return '\n'.join(lines)
 
 
@@ -602,8 +731,11 @@ def public_page(section, entry_id=None, page=0, reader=request, expected_sha=Non
     params = {}
     if entry_id:
         params[{'ask': 'question', 'discussions': 'post'}.get(section, 'id')] = entry_id
-    elif page:
-        params['page'] = page
+    else:
+        if section == 'hiring':
+            params['type'] = 'opening'
+        if page:
+            params['page'] = page
     url = BASE + route + ('?' + urlencode(params) if params else '')
     parser = PublicPageText(section)
     parser.feed(reader(url))
