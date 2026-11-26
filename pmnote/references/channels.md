@@ -380,6 +380,8 @@
 - [第196期 - PM 太能扛，不一定是好事｜往上汇报到底该讲什么](https://www.xiaoyuzhoufm.com/episode/6aec98016381f0f964c467c1)
 - [第198期 - 游戏公司的AI中场：一个“先不裁员”的承诺](https://www.xiaoyuzhoufm.com/episode/6af26e43b4a4e20202f7667b)
 - [第197期 - 喝了这杯 AI，代价呢？聊聊游戏人的2026【Hao&游戏人有态度串台】](https://www.xiaoyuzhoufm.com/episode/6af2c5305b7c4709bfe3ea28)
+- [第199期 - 游戏PM的下半场：团队收缩，AI上桌](https://www.xiaoyuzhoufm.com/episode/6afb1743fe62f8f52c4c2ead)
+- [【油管解读】造大模型的团队怎么定目标、招什么人——姚顺雨在清华姚班的分享全文](https://www.xiaoyuzhoufm.com/episode/6b00547e77e5b18a33306131)
 
 ## 知乎
 
@@ -470,6 +472,7 @@
 - [PM 太能扛，不一定是好事](https://zhuanlan.zhihu.com/p/2101988256896258856)
 - [游戏公司的AI中场：一个“先不裁员”的承诺](https://zhuanlan.zhihu.com/p/2103272753319108961)
 - [喝了这杯 AI，代价呢？和大盛聊游戏人的 2026](https://zhuanlan.zhihu.com/p/2103483664785056190)
+- [游戏PM的下半场：团队收缩，AI上桌](https://zhuanlan.zhihu.com/p/2105777637041952564)
 - [游戏制作模型（三）——经济系统](https://zhuanlan.zhihu.com/p/260057004)
 - [游戏制作模型（四）——系统设计](https://zhuanlan.zhihu.com/p/260406573)
 - [嘉年华项目总结](https://zhuanlan.zhihu.com/p/26523225)
@@ -664,6 +667,7 @@
 - [游戏行业PM的12月总结](https://www.bilibili.com/video/BV1ezmRBwEaz/)
 - [你需要标准化自己的工作](https://www.bilibili.com/video/BV1F48nznEn5/)
 - [深圳 | 7月游戏PM岗位JD拆解](https://www.bilibili.com/video/BV1f4KV6XEDH/)
+- [一个给互联网游戏PM准备的🎁...](https://www.bilibili.com/video/BV1fDyWzhE7C/)
 - [腾讯游戏PM 面试真题（难度：中）](https://www.bilibili.com/video/BV1FUgYe1EFS/)
 - [游戏 PM 刷了一圈 boss，看完有点沉默了。。。](https://www.bilibili.com/video/BV1G48vz2EBu/)
 - [述职是真挺烦的...](https://www.bilibili.com/video/BV1gc32zbELB/)
@@ -674,6 +678,7 @@
 - [从人盯人到机制盯人：PM的关键跃迁](https://www.bilibili.com/video/BV1hLwMzwE5S/)
 - [3分钟沉浸式模拟面试｜腾讯游戏PM岗](https://www.bilibili.com/video/BV1HoPFezE7z/)
 - [游戏PM的4个职业陷阱](https://www.bilibili.com/video/BV1HvwMzEEYr/)
+- [用 AI 干得越快，分给我的活就越多？](https://www.bilibili.com/video/BV1HWypzwEd6/)
 - [游戏PM千万不要当纯催进度的工具人。。](https://www.bilibili.com/video/BV1i773zHEPb/)
 - [腾讯游戏PM实习面试模拟（附思路）](https://www.bilibili.com/video/BV1ifWKecEg6/)
 - [美术PM有点难，但更难的是...](https://www.bilibili.com/video/BV1igfmYmEj6/)
@@ -747,6 +752,7 @@
 - [当人成了决策瓶颈，聊聊项目里那些人的问题](https://www.bilibili.com/video/BV1wSdpBCEHr/)
 - [我曾以为，这种事根本不归PM管](https://www.bilibili.com/video/BV1wTn86kEmE/)
 - [游戏PM 如何在没有正反馈的职场上活下来](https://www.bilibili.com/video/BV1WwuzzoE9d/)
+- [游戏行业PM的下半场](https://www.bilibili.com/video/BV1wzsN6EEwr/)
 - [转行游戏PM后，怎么提升研发效率？](https://www.bilibili.com/video/BV1Xds8zXEsJ/)
 - [偷懒上瘾✋🏻让这4个PM工具替你上班‼️](https://www.bilibili.com/video/BV1xVsFehE5b/)
 - [PM进步最快的方式：消除模糊](https://www.bilibili.com/video/BV1y2QhYYEtJ/)

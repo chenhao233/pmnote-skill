@@ -13,6 +13,7 @@
 - [把需求整理成可追溯的评审包 · AI 工具专题](https://pmnote.ai/tools/collections/version-review)
 - [ComfyUI](https://pmnote.ai/tools/comfyui)
 - [Cursor](https://pmnote.ai/tools/cursor)
+- [earshot](https://pmnote.ai/tools/earshot)
 - [GenMusic](https://pmnote.ai/tools/genmusic)
 - [GVHMR](https://pmnote.ai/tools/gvhmr)
 - [海螺 AI](https://pmnote.ai/tools/hailuo)
